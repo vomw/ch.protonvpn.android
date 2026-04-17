@@ -53,7 +53,8 @@ jobs:
           alias: ${{ secrets.SIGNING_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
           keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          buildToolsVersion: "35.0.0" # Manually specify a modern version available on ubuntu-latest
+        env:
+          BUILD_TOOLS_VERSION: "36.0.0" # Pass as environment variable to the action
 
       - name: Prepare Artifact Names
         id: names
