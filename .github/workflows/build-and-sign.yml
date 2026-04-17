@@ -41,6 +41,9 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           PROTONVPN_SENTRY_DSN: ${{ secrets.PROTONVPN_SENTRY_DSN }}
 
+      - name: List Available Build Tools (Debug)
+        run: ls -R $ANDROID_HOME/build-tools
+
       - name: Sign APK
         id: sign_app
         uses: r0adkll/sign-android-release@v1
@@ -50,6 +53,7 @@ jobs:
           alias: ${{ secrets.SIGNING_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
           keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          buildToolsVersion: "35.0.0" # Manually specify a modern version available on ubuntu-latest
 
       - name: Prepare Artifact Names
         id: names
