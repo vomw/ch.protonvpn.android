@@ -30,9 +30,15 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Production Vanilla Direct Release APK
-        run: ./gradlew :app:assembleProductionVanillaDirectRelease
+        run: |
+          # Use -x to skip Sentry upload tasks which cause failures if secrets are not configured
+          ./gradlew :app:assembleProductionVanillaDirectRelease \
+            -x uploadSentryProguardMappingsProductionVanillaDirectRelease \
+            -x uploadSentryNativeSymbolsForProductionVanillaDirectRelease
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           PROTONVPN_SENTRY_DSN: ${{ secrets.PROTONVPN_SENTRY_DSN }}
 
       - name: Sign APK
