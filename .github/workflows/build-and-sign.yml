@@ -1,0 +1,79 @@
+name: Build and Sign Android APK
+
+on:
+  push:
+    branches:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Sign APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history required for versioning from git tags
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant Execute Permission to Gradlew
+        run: chmod +x gradlew
+
+      - name: Build Production Vanilla Direct Release APK
+        run: ./gradlew :app:assembleProductionVanillaDirectRelease
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          PROTONVPN_SENTRY_DSN: ${{ secrets.PROTONVPN_SENTRY_DSN }}
+
+      - name: Sign APK
+        id: sign_app
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/productionVanillaDirect/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
+          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+
+      - name: Prepare Artifact Names
+        id: names
+        run: |
+          # Extract versioning information using the Gradle task defined in the codebase
+          ./gradlew :app:getExportArchiveNameProperties > props.txt
+          ARCHIVES_BASE_NAME=$(sed -n '1p' props.txt)
+          VERSION_NAME=$(sed -n '2p' props.txt)
+          
+          # Package ID is defined as ch.protonvpn.android by default
+          PACKAGE_ID="ch.protonvpn.android"
+          
+          # Construct the filename as requested: {packageId}-v{version}.apk
+          NEW_NAME="${PACKAGE_ID}-v${VERSION_NAME}.apk"
+          
+          # The signed APK is produced by the sign-android-release action
+          SIGNED_APK_PATH="${{ steps.sign_app.outputs.signedReleaseFile }}"
+          
+          if [ -f "$SIGNED_APK_PATH" ]; then
+            cp "$SIGNED_APK_PATH" "./$NEW_NAME"
+            echo "NEW_NAME=$NEW_NAME" >> $GITHUB_OUTPUT
+            echo "Successfully prepared artifact: $NEW_NAME"
+          else
+            echo "Error: Signed APK not found at $SIGNED_APK_PATH"
+            exit 1
+          fi
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.names.outputs.NEW_NAME }}
+          path: ${{ steps.names.outputs.NEW_NAME }}
+          if-no-files-found: error
