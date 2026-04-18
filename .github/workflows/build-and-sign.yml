@@ -40,6 +40,7 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           PROTONVPN_SENTRY_DSN: ${{ secrets.PROTONVPN_SENTRY_DSN }}
+          BTI_HOST: "https://cors.eu.org/vpn-api.proton.me"
 
       - name: List Available Build Tools (Debug)
         run: ls -R $ANDROID_HOME/build-tools
