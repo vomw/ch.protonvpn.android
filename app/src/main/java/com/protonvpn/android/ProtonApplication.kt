@@ -277,12 +277,6 @@ open class ProtonApplication : Application() {
 
     private fun initLogger() {
         val secondaryWriters: MutableList<LogWriter> = ArrayList()
-        if (this is ProtonApplicationHilt) {
-            // Add GlobalSentryLogWriter only in real application, it doesn't work with Hilt tests
-            // because some message are being logged already in ProtonApplication.onCreate() - Hilt
-            // dependencies are not available in tests this early.
-            secondaryWriters.add(GlobalSentryLogWriter(this))
-        }
         if (BuildConfig.DEBUG || BuildConfig.ALLOW_LOGCAT) {
             secondaryWriters.add(LogcatLogWriter())
         }

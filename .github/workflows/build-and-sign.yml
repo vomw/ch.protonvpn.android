@@ -30,19 +30,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Production Vanilla Direct Release APK
-        run: |
-          # Use -x to skip Sentry upload tasks which cause failures if secrets are not configured
-          ./gradlew :app:assembleProductionVanillaDirectRelease \
-            -x uploadSentryProguardMappingsProductionVanillaDirectRelease \
-            -x uploadSentryNativeSymbolsForProductionVanillaDirectRelease
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          PROTONVPN_SENTRY_DSN: ${{ secrets.PROTONVPN_SENTRY_DSN }}
-
-      - name: List Available Build Tools (Debug)
-        run: ls -R $ANDROID_HOME/build-tools
+        run: ./gradlew :app:assembleProductionVanillaDirectRelease
 
       - name: Sign APK
         id: sign_app
@@ -61,10 +49,9 @@ jobs:
         run: |
           # Extract versioning information using the Gradle task defined in the codebase
           ./gradlew :app:getExportArchiveNameProperties > props.txt
-          ARCHIVES_BASE_NAME=$(sed -n '1p' props.txt)
           VERSION_NAME=$(sed -n '2p' props.txt)
           
-          # Package ID is defined as ch.protonvpn.android by default
+          # Package ID is ch.protonvpn.android
           PACKAGE_ID="ch.protonvpn.android"
           
           # Construct the filename as requested: {packageId}-v{version}.apk

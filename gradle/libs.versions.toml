@@ -78,8 +78,6 @@ retrofit-version = "2.11.0"
 robolectric-version = "4.14.1"
 scottyab-aes-crypto-version = "0.0.5"
 seancfoley-ipaddress-version = "5.5.1"
-sentry-plugin-version = "6.0.0"
-sentry-version = "7.22.5"
 slf4j-version = "1.7.36"
 squareup-leakcanary-version = "2.14"
 tony19-logback-version = "2.0.0"
@@ -279,7 +277,6 @@ proton-core-user-settings = { group = "me.proton.core", name = "user-settings", 
 proton-core-user-settings-data = { group = "me.proton.core", name = "user-settings-data", version.ref = "proton-core-version" }
 proton-core-util-android-dagger = { group = "me.proton.core", name = "util-android-dagger", version.ref = "proton-core-version" }
 proton-core-util-android-datetime = { group = "me.proton.core", name = "util-android-datetime", version.ref = "proton-core-version" }
-proton-core-util-android-sentry = { group = "me.proton.core", name = "util-android-sentry", version.ref = "proton-core-version" }
 proton-core-util-android-shared-preferences = { group = "me.proton.core", name = "util-android-shared-preferences", version.ref = "proton-core-version" }
 proton-core-util-kotlin = { group = "me.proton.core", name = "util-kotlin", version.ref = "proton-core-version" }
 proton-test-fusion = { group = "me.proton.test", name = "fusion", version.ref = "proton-test-fusion-version" }
@@ -291,7 +288,6 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric-version" }
 scottyab-aes-crypto = { group = "com.scottyab", name = "aes-crypto", version.ref = "scottyab-aes-crypto-version" }
 seancfoley-ipaddress = { group = "com.github.seancfoley", name = "ipaddress", version.ref = "seancfoley-ipaddress-version" }
-sentry-android = { group = "io.sentry", name = "sentry-android", version.ref = "sentry-version" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j-version" }
 squareup-leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "squareup-leakcanary-version" }
 squareup-leakcanary-object-watcher = { group = "com.squareup.leakcanary", name = "leakcanary-object-watcher-android", version.ref = "squareup-leakcanary-version" }
@@ -323,5 +319,4 @@ owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "owasp
 proton-core-env-config = { id = "me.proton.core.gradle-plugins.environment-config", version.ref = "proton-core-env-config-version" }
 proton-vpn-android-application = { id = "me.proton.vpn.android.application" }
 proton-vpn-android-library = { id = "me.proton.vpn.android.library" }
-sentry = { id = "io.sentry.android.gradle", version.ref = "sentry-plugin-version" }
 triplet-play = { id = "com.github.triplet.play", version.ref = "triplet-play-version" }

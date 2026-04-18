@@ -20,35 +20,15 @@
 package com.protonvpn.android.utils
 
 import android.app.Application
-import android.os.Build
-import com.protonvpn.android.BuildConfig
-import com.protonvpn.android.tv.IsTvCheck
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.components.SingletonComponent
-import io.sentry.Sentry
-import io.sentry.SentryOptions
-import io.sentry.android.core.SentryAndroid
-import io.sentry.protocol.User
-import me.proton.core.util.android.device.isDeviceRooted
-import me.proton.core.util.android.sentry.project.AccountSentryHubBuilder
 import java.util.UUID
 
+/**
+ * Stubbed out SentryIntegration to remove trackers while maintaining app functionality.
+ */
 object SentryIntegration {
 
     private const val SENTRY_INSTALLATION_ID_KEY = "sentry_installation_id"
     private const val SENTRY_ENABLED_KEY = "sentry_is_enabled"
-
-    private lateinit var application: Application
-
-    private val isRooted by lazy { isDeviceRooted(application) }
-
-    @EntryPoint
-    @InstallIn(SingletonComponent::class)
-    interface HiltEntryPoint {
-        val isTv: IsTvCheck
-    }
 
     @JvmStatic
     fun getInstallationId(): String =
@@ -59,68 +39,20 @@ object SentryIntegration {
 
     @JvmStatic
     fun initSentry(app: Application) {
-        application = app
-        initSentry()
-
-        val currentHandler = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler(ProtonExceptionHandler(currentHandler))
+        // Tracker removed
     }
 
     fun setEnabled(isEnabled: Boolean) {
-        Storage.saveBoolean(SENTRY_ENABLED_KEY, isEnabled)
-        initSentry()
+        Storage.saveBoolean(SENTRY_ENABLED_KEY, false)
     }
 
-    fun isEnabled() = Storage.getBoolean(SENTRY_ENABLED_KEY, true)
+    fun isEnabled() = false
 
     private fun initSentry() {
-        val sentryDsn = if (!BuildConfig.DEBUG && isEnabled()) BuildConfig.Sentry_DSN else ""
-        SentryAndroid.init(application) { options ->
-            options.dsn = sentryDsn
-            options.release = BuildConfig.VERSION_NAME
-            // Check for root involves multiple binder calls, delay it until onBeforeSend.
-            options.isEnableRootCheck = false
-            options.isEnableAutoSessionTracking = false
-            options.isEnableActivityLifecycleBreadcrumbs = false // We log our own breadcrumbs.
-            options.isEnableUserInteractionBreadcrumbs = false
-            options.isEnableFramesTracking = false
-            options.isAnrEnabled = Build.VERSION.SDK_INT >= 11 // Only report with the ApplicationExitInfo mechanism.
-            options.maxBreadcrumbs = 300
-            options.setBeforeSend { event, _ ->
-                val deps = EntryPointAccessors.fromApplication(application, HiltEntryPoint::class.java)
-                SentryFingerprints.setFingerprints(event)
-                event.setTag("os.rooted", if (isRooted) "yes" else "no")
-                event.setTag("isTv", deps.isTv().toString())
-                event
-            }
-            options.isEnableScopeSync = true
-        }
-        Sentry.setUser(User().apply { id = getInstallationId() })
-        // Add manufacturer because some devices report device model for "device.family" which isn't very useful for
-        // vendor-specific issues.
-        Sentry.setTag("device.manufacturer", Build.MANUFACTURER)
+        // Tracker removed
     }
 
-    /** Note: should be called only once. */
     fun initAccountSentry() {
-        val entryPoint = EntryPointAccessors.fromApplication(
-            application,
-            SentryIntegrationEntryPoint::class.java
-        )
-
-        entryPoint.accountSentryHubBuilder().invoke(
-            sentryDsn = BuildConfig.ACCOUNT_SENTRY_DSN.takeIf { !BuildConfig.DEBUG }.orEmpty(),
-            installationId = getInstallationId()
-        ) { options ->
-            options.beforeSend = SentryOptions.BeforeSendCallback { event, _ ->
-                if (isEnabled()) event else null
-            }
-        }
-    }
-
-    @EntryPoint
-    @InstallIn(SingletonComponent::class)
-    internal interface SentryIntegrationEntryPoint {
-        fun accountSentryHubBuilder(): AccountSentryHubBuilder
+        // Tracker removed
     }
 }

@@ -50,7 +50,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.proton.core.env.config)
-    alias(libs.plugins.sentry)
     alias(libs.plugins.triplet.play)
 }
 
@@ -128,8 +127,6 @@ licenseReport {
     copyJsonReportToAssets = false
 }
 
-def sentryDsn = System.getenv("PROTONVPN_SENTRY_DSN") ?: project.hasProperty('sentryDsn') ? sentryDsn : ""
-def accountSentryDsn = System.getenv("ACCOUNT_SENTRY_DSN") ?: project.hasProperty('accountSentryDsn') ? accountSentryDsn : ""
 def preferencesSalt = System.getenv("DEPRECATED_PREF_SALT") ?: "Salt"
 def preferencesKey = System.getenv("DEPRECATED_PREF_KEY") ?: "Key"
 def serviceAccountCredentialsPath = project.hasProperty('serviceAccountFilePath') ? serviceAccountFilePath : "service_account.json"
@@ -175,8 +172,6 @@ android {
         def availableLocalesJava = supportedLocales.collect { "\"$it\"" }.join(", ")
         buildConfigField "String[]", "SUPPORTED_LOCALES", "{$availableLocalesJava}"
 
-        buildConfigField "String", "Sentry_DSN",  "\"${StringEscapeUtils.escapeJava(sentryDsn)}\""
-        buildConfigField "String", "ACCOUNT_SENTRY_DSN",  "\"${StringEscapeUtils.escapeJava(accountSentryDsn)}\""
         buildConfigField "String", "PREF_SALT",  "\"${StringEscapeUtils.escapeJava(preferencesSalt)}\""
         buildConfigField "String", "PREF_KEY",  "\"${StringEscapeUtils.escapeJava(preferencesKey)}\""
         buildConfigField "String", "TEST_ACCOUNT_PASSWORD",  "\"Pass\""
@@ -419,36 +414,6 @@ play {
 }
 
 // The config file is downloaded by the downloadDetektConfig task.
-def commonDetektConfigPath = "${rootProject.projectDir}/config/detekt/config.yml"
-def projectDetektConfigPath = "${rootProject.projectDir}/config/detekt/custom-config.yml"
-detekt {
-    config = files(commonDetektConfigPath, projectDetektConfigPath)
-    reports {
-        html.required.set(false)
-        xml.required.set(false)
-        txt.required.set(false)
-        sarif.required.set(false)
-        custom {
-            reportId = "outputreport.GitlabQualityOutputReport"
-            outputLocation.set(file("build/reports/detekt/detekt.json"))
-        }
-    }
-}
-
-sentry {
-    // This configuration uploads mapping files to Sentry and requires credentials either in a
-    // local file or environment variables.
-    // To disable the upload temporarily (e.g. when building locally) add "release" to
-    // ignoredBuildTypes (I wish there was a better way...).
-    includeProguardMapping = true
-    uploadNativeSymbols = true
-    ignoredBuildTypes = ["debug", "benchmarkRelease", "nonMinifiedRelease"]
-    ignoredFlavors = ["openSource", "dev"]
-
-    // We don't want the sentry plugin to add anything to our builds:
-    tracingInstrumentation { enabled = false }
-    autoInstallation { enabled = false }
-}
 
 tasks.withType(Detekt).configureEach {
     dependsOn "downloadDetektConfig"
@@ -775,7 +740,6 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.window)
-    implementation(libs.sentry.android)
     implementation(libs.androidx.legacy.support.v4)
     implementation(libs.androidx.vectordrawable)
     implementation(libs.androidx.constraintlayout)
@@ -913,7 +877,6 @@ dependencies {
     implementation(libs.proton.core.data.room)
     implementation(libs.proton.core.util.android.dagger)
     implementation(libs.proton.core.util.android.datetime)
-    implementation(libs.proton.core.util.android.sentry)
     implementation(libs.proton.core.util.android.shared.preferences)
     implementation(libs.proton.core.configuration.data)
     implementation(libs.proton.core.biometric)
