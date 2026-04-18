@@ -31,19 +31,14 @@ import com.protonvpn.android.vpn.DisconnectTrigger
 import com.protonvpn.android.vpn.VpnState
 import com.protonvpn.android.vpn.VpnStateMonitor
 import dagger.Reusable
-import io.sentry.Sentry
-import io.sentry.SentryEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import me.proton.core.featureflag.domain.ExperimentalProtonFeatureFlag
 import me.proton.core.featureflag.domain.FeatureFlagManager
 import me.proton.core.featureflag.domain.entity.FeatureId
 import javax.inject.Inject
 import javax.inject.Singleton
-
-private class ConnectionTelemetryDebug(message: String) : Throwable(message)
 
 @OptIn(ExperimentalProtonFeatureFlag::class)
 @Reusable
@@ -51,8 +46,7 @@ class ConnectionTelemetrySentryDebugEnabled @Inject constructor(
     private val currentUser: CurrentUser,
     private val featureFlagManager: FeatureFlagManager
 )  {
-    suspend operator fun invoke(): Boolean =
-        featureFlagManager.getValue(currentUser.user()?.userId, FeatureId("ConnectionTelemetrySentryDebug"))
+    suspend operator fun invoke(): Boolean = false // Tracker removed
 }
 
 @Singleton
@@ -99,7 +93,6 @@ class VpnConnectionTelemetry @Inject constructor(
     fun onConnectionStart(trigger: ConnectTrigger, hasExcludedLocations: Boolean) {
         if (trigger !is ConnectTrigger.Fallback || connectionInProgress == null) {
             connectionInProgress?.let {
-                reportImmediateAbortToSentry("new connection start")
                 sendConnectionEvent(Outcome.ABORTED, null, it, null)
             }
 
@@ -114,7 +107,6 @@ class VpnConnectionTelemetry @Inject constructor(
 
     fun onConnectionAbort(isFailure: Boolean = false, report: Boolean = true, sentryInfo: String? = null) {
         if (report) {
-            if (!isFailure && sentryInfo != null) reportImmediateAbortToSentry(sentryInfo)
             onConnectingFinished(
                 if (isFailure) Outcome.FAILURE else Outcome.ABORTED,
                 localAgentErrorCode = null,
@@ -143,7 +135,6 @@ class VpnConnectionTelemetry @Inject constructor(
             trigger !is DisconnectTrigger.Fallback
         ) {
             val outcome = if (trigger.isSuccess) Outcome.ABORTED else Outcome.FAILURE
-            if (outcome == Outcome.ABORTED) reportImmediateAbortToSentry("disconnect")
             onConnectingFinished(outcome, localAgentErrorCode = null, connectionParams)
         } else if (lastConnectTimestampMs != null) { // Only log events when previously connected.
             sendDisconnectEvent(trigger, connectionParams)
@@ -237,20 +228,6 @@ class VpnConnectionTelemetry @Inject constructor(
     }
 
     private fun Boolean.toOutcome() = if (this) Outcome.SUCCESS else Outcome.FAILURE
-
-    private fun reportImmediateAbortToSentry(sentryInfo: String) {
-        val inProgress = connectionInProgress
-        if (inProgress != null && clock() - inProgress.timestampMs < 150) {
-            mainScope.launch {
-                if (isSentryDebugEnabled()) {
-                    val trigger = inProgress.trigger.statsName
-                    val event = SentryEvent(ConnectionTelemetryDebug("'$trigger' connection aborted: $sentryInfo"))
-                    event.fingerprints = listOf(trigger, sentryInfo)
-                    Sentry.captureEvent(event)
-                }
-            }
-        }
-    }
 
     companion object {
         const val MEASUREMENT_GROUP = "vpn.any.connection"

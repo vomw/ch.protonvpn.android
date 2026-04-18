@@ -19,14 +19,10 @@
 
 package com.protonvpn.android.auth
 
-import io.sentry.Sentry
-import io.sentry.SentryEvent
 import me.proton.core.account.domain.repository.AccountRepository
 import me.proton.core.accountmanager.data.SessionListenerImpl
 import me.proton.core.accountmanager.domain.SessionManager
-import me.proton.core.network.domain.HttpResponseCodes
 import me.proton.core.network.domain.session.Session
-import me.proton.core.network.domain.session.SessionId
 import javax.inject.Inject
 
 class VpnSessionListener @Inject constructor(
@@ -35,19 +31,6 @@ class VpnSessionListener @Inject constructor(
 ) : SessionListenerImpl(sessionManager) {
 
     override suspend fun onSessionForceLogout(session: Session, httpCode: Int) {
-        val username = accountRepository.get().getAccountOrNull(session.sessionId)?.username
-        reportForceLogout(username, session.sessionId, httpCode);
         super.onSessionForceLogout(session, httpCode)
-    }
-}
-
-private class SessionClosedInfo : Throwable("Force logout event 400")
-private fun reportForceLogout(username: String?, sessionId: SessionId, httpCode: Int) {
-    // 400 is returned for unexpected logouts
-    if (httpCode == HttpResponseCodes.HTTP_BAD_REQUEST) {
-        val event = SentryEvent(SessionClosedInfo())
-        username?.let { event.setExtra("Username", it) }
-        event.setExtra("SessionId", sessionId.toString())
-        Sentry.captureEvent(event)
     }
 }

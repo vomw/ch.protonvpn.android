@@ -24,7 +24,6 @@ import com.protonvpn.android.concurrency.VpnDispatcherProvider
 import com.protonvpn.android.logging.LogCategory
 import com.protonvpn.android.logging.ProtonLogger
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.sentry.Sentry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,16 +55,15 @@ class TelemetryCache @Inject constructor(
             val file = getFile()
             if (file.exists()) {
                 try {
-                    file.useLines { lines ->
-                        lines.map { line ->
-                            json.decodeFromString<TelemetryEvent>(line)
+                    file.useLines {
+                        it.map {
+                            json.decodeFromString<TelemetryEvent>(it)
                         }.filter {
                             it.timestamp >= maxTimestamp
                         }.toList()
                     }
                 } catch (e: Throwable) {
                     ProtonLogger.logCustom(LogCategory.TELEMETRY, "Unable to read cache file: $e")
-                    Sentry.captureException(TelemetryError("Unable to read cache", e))
                     emptyList()
                 }
             } else {
@@ -78,8 +76,8 @@ class TelemetryCache @Inject constructor(
         mainScope.launch(serialIo) {
             try {
                 @Suppress("BlockingMethodInNonBlockingContext")
-                FileWriter(getFile()).use { writer ->
-                    eventsToSave.forEach { event ->
+                FileWriter(getFile()).use {
+                    it.forEach { event ->
                         writer.write(json.encodeToString(event))
                         writer.write("\n")
                     }
@@ -87,8 +85,6 @@ class TelemetryCache @Inject constructor(
             } catch (e: IOException) {
                 ProtonLogger.logCustom(LogCategory.TELEMETRY, "Unable to save cache file: $e")
                 if (!hasReportedWriteException) {
-                    // Report it only once per process to avoid sending too many events.
-                    Sentry.captureException(TelemetryError("Unable to write cache", e))
                     hasReportedWriteException = true
                 }
             }

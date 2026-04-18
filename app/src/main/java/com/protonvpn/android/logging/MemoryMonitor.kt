@@ -28,9 +28,6 @@ import com.protonvpn.android.di.ElapsedRealtimeClock
 import com.protonvpn.android.vpn.VpnState
 import com.protonvpn.android.vpn.VpnStateMonitor
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.sentry.Sentry
-import io.sentry.SentryEvent
-import io.sentry.protocol.Message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -106,20 +103,7 @@ class MemoryMonitor @Inject constructor(
                         "${memState.importance.toImportanceLog()}/${memState.importanceReasonCode}/" +
                         memState.importanceReasonComponent?.shortClassName)
 
-                    if (
-                        result.privateKb > HIGH_USAGE_THRESHOLD_KB &&
-                        elapsed > SENTRY_LOG_DELAY &&
-                        currentUser.vpnUser()?.isPMTeam == true
-                    ) {
-                        val event = SentryEvent().apply {
-                            message = Message().apply {
-                                message = "MemoryMonitor threshold exceeded: %s"
-                                params = listOf("${result.privateKb/1024}MB " +
-                                    "> ${HIGH_USAGE_THRESHOLD_KB/1024}")
-                            }
-                        }
-                        Sentry.captureEvent(event)
-                    }
+                    // Sentry report removed
                 }
 
                 lastResult = result
@@ -136,7 +120,6 @@ class MemoryMonitor @Inject constructor(
         val MEM_LOG_INITIAL_DELAY = TimeUnit.SECONDS.toMillis(4)
         val MEM_LOG_PERIODIC_DELAY = TimeUnit.MINUTES.toMillis(20)
         val MEM_LOG_MIN_DELAY = TimeUnit.MINUTES.toMillis(3)
-        val SENTRY_LOG_DELAY = TimeUnit.HOURS.toMillis(1)
         const val HIGH_USAGE_THRESHOLD_KB = 250/*MB*/ * 1024
     }
 }

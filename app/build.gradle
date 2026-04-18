@@ -701,7 +701,6 @@ configurations.configureEach {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
-    googleImplementation(libs.android.installreferrer)
     implementation(libs.androidx.profileinstaller)
     baselineProfile(projects.baselineprofile)
 

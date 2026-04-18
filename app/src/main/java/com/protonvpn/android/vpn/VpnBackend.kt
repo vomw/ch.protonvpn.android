@@ -51,7 +51,6 @@ import com.protonvpn.android.ui.home.GetNetZone
 import com.protonvpn.android.utils.Constants
 import com.protonvpn.android.utils.SyncStateFlow
 import com.protonvpn.android.utils.suspendForCallbackWithTimeout
-import io.sentry.Sentry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -382,8 +381,7 @@ abstract class VpnBackend(
                     internalVpnProtocolState.first { it is VpnState.Disabled }
                 }
             } catch (e: TimeoutCancellationException) {
-                val status = "protocol state: $vpnProtocolState, protocol: ${lastConnectionParams?.protocolSelection}"
-                Sentry.captureMessage("Timed out waiting for backend to close: $status")
+                // Sentry report removed
             }
             selfStateFlow.value = VpnState.Error(error, description, isFinal = disconnectVPN, localAgentErrorCode)
         }

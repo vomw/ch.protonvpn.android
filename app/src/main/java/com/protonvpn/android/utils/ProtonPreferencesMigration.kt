@@ -26,10 +26,9 @@ import com.protonvpn.android.BuildConfig
 import com.protonvpn.android.logging.LogCategory
 import com.protonvpn.android.logging.LogLevel
 import com.protonvpn.android.logging.ProtonLogger
-import io.sentry.Sentry
 
 fun migrateProtonPreferences(appContext: Context, protonPrefsName: String, destinationPrefsName: String) {
-    {
+    try {
         if (AndroidUtils.sharedPrefsExists(appContext, protonPrefsName)) {
             ProtonLogger.logCustom(LogCategory.APP, "Storage migration: starting");
             try {
@@ -42,9 +41,8 @@ fun migrateProtonPreferences(appContext: Context, protonPrefsName: String, desti
                 AndroidUtils.deleteSharedPrefs(appContext, protonPrefsName)
             }
         }
-    }.runCatchingCheckedExceptions { e ->
+    } catch (e: Exception) {
         ProtonLogger.logCustom(LogLevel.ERROR, LogCategory.APP, "Storage migration: failed with $e")
-        Sentry.captureException(e)
     }
 }
 
@@ -54,15 +52,11 @@ private fun migrateData(src: ProtonPreferences, dst: SharedPreferences) {
         val versionCode = src.getInt("VERSION_CODE", 0)
         if (versionCode > 0) putInt("VERSION_CODE", versionCode)
 
-        // Booleans.
-        putBoolean("sentry_is_enabled", src.getBoolean("sentry_is_enabled", true))
-
         // Strings and serialized objects.
         listOf(
             "IP_ADDRESS",
             "LAST_USER",
             "VpnStateMonitor.VPN_STATE_NAME",
-            "sentry_installation_id",
             "com.protonvpn.android.promooffers.data.ApiNotificationsResponse",
             "com.protonvpn.android.appconfig.AppConfigResponse",
             "com.protonvpn.android.models.config.bugreport.DynamicReportModel",

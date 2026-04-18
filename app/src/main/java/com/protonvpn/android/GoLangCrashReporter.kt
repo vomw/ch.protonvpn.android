@@ -25,11 +25,8 @@ import com.protonvpn.android.concurrency.VpnDispatcherProvider
 import com.protonvpn.android.logging.AppCrash
 import com.protonvpn.android.logging.LogCategory
 import com.protonvpn.android.logging.ProtonLogger
-import com.protonvpn.android.logging.SentryLogScrubber
 import dagger.Reusable
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.sentry.Sentry
-import io.sentry.SentryEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
@@ -43,7 +40,6 @@ import okhttp3.internal.closeQuietly
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -57,8 +53,7 @@ class GoLangSendCrashesToSentryEnabled @Inject constructor(
     private val currentUser: CurrentUser,
     private val featureFlagManager: FeatureFlagManager
 ) {
-    suspend operator fun invoke() =
-        Build.VERSION.SDK_INT >= 30 && featureFlagManager.getValue(currentUser.user()?.userId, FeatureId(FLAG_ID))
+    suspend operator fun invoke() = false // Tracker removed
 
     companion object {
         const val FLAG_ID = "GoLangSendCrashesToSentryEnabled"
@@ -75,46 +70,8 @@ class GoLangCrashReporter @Inject constructor(
     fun start() {
         mainScope.launch(dispatcherProvider.Io) {
             if (goLangSendCrashesToSentryEnabled()) {
-                // This is costly, let's postpone it until after the launch.
-                delay(REPORTER_DELAY_MS)
-
-                val file = appContext.goErrorLogFile()
-                if (file.exists()) {
-                    try {
-                        val content = file.readLines()
-                        if (content.isNotEmpty()) {
-                            val firstLine = content.first()
-                            val event = SentryEvent(GoLangCrash(firstLine))
-                            event.setExtra("stack", content.joinToString("\n"))
-                            event.setExtra("stack_time", Date(file.lastModified()).toGMTString())
-                            event.fingerprints = extractFingerprints(content)
-                            Sentry.captureEvent(event)
-                            ProtonLogger.log(AppCrash, "GoLang crash report: $firstLine")
-                        }
-                    } catch (e: IOException) {
-                        ProtonLogger.logCustom(
-                            LogCategory.APP,
-                            "Error reading GoLang crash log: ${e.message}"
-                        )
-                    } finally {
-                        file.delete()
-                    }
-                }
+                // Tracker removed
             }
-        }
-    }
-
-    private fun extractFingerprints(content: List<String>): List<String> = buildList {
-        // Filter out hex digits from the fingerprint to prevent addresses from splitting otherwise identical issue.
-        // This will replace characters from text but grouping should still work well based on the remaining chars.
-        val messageLine = content.first().replace("[0-9A-Fa-f]".toRegex(), "_")
-        add(messageLine)
-        if (content.first().endsWith("send on closed channel")) {
-            val channelCloseFrame = content
-                .drop(1)
-                .find { it.isNotBlank() && !it.startsWith("goroutine") }
-            if (channelCloseFrame != null)
-                add(channelCloseFrame)
         }
     }
 }
@@ -124,7 +81,6 @@ class GoLangCrashLogger @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val mainScope: CoroutineScope,
     private val dispatcherProvider: VpnDispatcherProvider,
-    private val sentryLogScrubber: dagger.Lazy<SentryLogScrubber>,
 ) {
     private val channel = Channel<String>(CHANNEL_BUFFER_SIZE, BufferOverflow.DROP_LATEST)
     private var consumer : Job? = null
@@ -137,7 +93,7 @@ class GoLangCrashLogger @Inject constructor(
             startConsumer()
         }
 
-        channel.trySend(sentryLogScrubber.get().scrubMessage(line))
+        channel.trySend(line)
     }
 
     private fun startConsumer() {

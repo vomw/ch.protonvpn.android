@@ -34,7 +34,6 @@ import com.protonvpn.android.logging.AppProcessStart
 import com.protonvpn.android.logging.CurrentStateLogger
 import com.protonvpn.android.logging.CurrentStateLoggerGlobal
 import com.protonvpn.android.logging.FileLogWriter
-import com.protonvpn.android.logging.GlobalSentryLogWriter
 import com.protonvpn.android.logging.LogCategory
 import com.protonvpn.android.logging.LogWriter
 import com.protonvpn.android.logging.LogcatLogWriter
@@ -63,7 +62,6 @@ import com.protonvpn.android.tv.IsTvCheck
 import com.protonvpn.android.ui.home.ServerListUpdater
 import com.protonvpn.android.ui.onboarding.ReviewTracker
 import com.protonvpn.android.ui.planupgrade.ShowUpgradeSuccess
-import com.protonvpn.android.utils.SentryIntegration.initSentry
 import com.protonvpn.android.utils.Storage
 import com.protonvpn.android.utils.UserPlanManager
 import com.protonvpn.android.utils.VpnCoreLogger
@@ -172,7 +170,6 @@ open class ProtonApplication : Application() {
         appContext = this
 
         initPreferences()
-        initSentry(this)
 
         if (isMainProcess()) {
             VpnLeakCanary.init(this)

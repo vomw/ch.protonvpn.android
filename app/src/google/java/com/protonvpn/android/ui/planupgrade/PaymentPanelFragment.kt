@@ -34,15 +34,11 @@ import androidx.lifecycle.lifecycleScope
 import com.protonvpn.android.R
 import com.protonvpn.android.base.ui.theme.VpnTheme
 import dagger.hilt.android.AndroidEntryPoint
-import io.sentry.Sentry
-import io.sentry.SentryEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import me.proton.core.network.domain.ApiException
-import me.proton.core.network.domain.ApiResult
 import me.proton.core.network.presentation.util.getUserMessage
 import me.proton.core.payment.domain.repository.BillingClientError
 import me.proton.core.plan.presentation.entity.PlanCycle
@@ -161,8 +157,7 @@ class PaymentPanelFragment : Fragment() {
         ) {
             anchorView = fragmentView
         }
-        if (allowReportToSentry && shouldReportToSentry(throwable))
-            logToSentry(message ?: throwable?.message, throwable) // Remove this once we know payments are in a good shape.
+        // Sentry report removed
     }
 
     private fun getUserMessage(context: Context, throwable: Throwable?): String? =
@@ -170,9 +165,6 @@ class PaymentPanelFragment : Fragment() {
             is BillingClientError -> null
             else -> throwable?.getUserMessage(context.resources)
         }
-
-    private fun shouldReportToSentry(throwable: Throwable?): Boolean =
-        throwable == null || (throwable as? ApiException)?.error !is ApiResult.Error.Connection
 
     @StringRes
     private fun planPerCycleResId(cycle: PlanCycle): Int = when(cycle) {
@@ -189,10 +181,4 @@ class PaymentPanelFragment : Fragment() {
         PlanCycle.TWO_YEARS -> R.string.payment_price_cycle_2years_label
         PlanCycle.FREE, PlanCycle.OTHER -> throw IllegalArgumentException("Invalid plan cycle")
     }
-
-    private fun logToSentry(errorMessage: String?, throwable: Throwable?) {
-        Sentry.captureEvent(SentryEvent(OneClickPaymentError(errorMessage, throwable)))
-    }
 }
-
-private class OneClickPaymentError(message: String?, cause: Throwable?) : Throwable(message, cause)

@@ -19,7 +19,6 @@
 
 package com.protonvpn.android.appconfig.periodicupdates
 
-import com.protonvpn.android.BuildConfig
 import com.protonvpn.android.components.AppInUseMonitor
 import com.protonvpn.android.di.WallClock
 import com.protonvpn.android.logging.LogCategory
@@ -27,8 +26,6 @@ import com.protonvpn.android.logging.LogLevel
 import com.protonvpn.android.logging.ProtonLogger
 import com.protonvpn.android.utils.Constants
 import com.protonvpn.android.utils.getValue
-import io.sentry.Sentry
-import io.sentry.SentryLevel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -334,7 +331,7 @@ class PeriodicUpdateManagerImpl @Inject constructor(
         if (runawayActionId != null) {
             val errorMessage = "Runaway action: $runawayActionId, throttling"
             ProtonLogger.logCustom(LogLevel.WARN, LogCategory.APP_PERIODIC, errorMessage)
-            if (!BuildConfig.DEBUG) Sentry.captureMessage(errorMessage, SentryLevel.ERROR)
+            // Sentry report removed
 
             val throttledTimestamp = clock() + RUNAWAY_ACTION_DELAY_MS.withJitter(randomJitterRatio())
             val callInfo = previousCalls[runawayActionId]?.copy(throttledTimestamp = throttledTimestamp)

@@ -29,9 +29,6 @@ import ch.qos.logback.core.rolling.FixedWindowRollingPolicy
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy
 import ch.qos.logback.core.util.FileSize
 import ch.qos.logback.core.util.StatusPrinter
-import io.sentry.Sentry
-import io.sentry.SentryEvent
-import io.sentry.protocol.Message
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -143,8 +140,8 @@ class FileLogWriter(
             }
         }
 
-        suspend fun getFileForSharing(): File? =
-            runInterruptible(loggerDispatcher) {
+        suspend fun getFileForSharing(): File?
+            = runInterruptible(loggerDispatcher) {
                 val dir = getShareFilesDir()
                 dir.mkdirs()
                 try {
@@ -336,8 +333,5 @@ class FileLogWriter(
 }
 
 private fun logException(message: String, throwable: Throwable) {
-    val event = SentryEvent(throwable).apply {
-        this.message = Message().apply { this.message = message }
-    }
-    Sentry.captureEvent(event)
+    // Sentry report removed
 }

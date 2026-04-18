@@ -22,7 +22,6 @@ package com.protonvpn.android.promooffers.usecase
 import android.content.Context
 import com.protonvpn.android.concurrency.VpnDispatcherProvider
 import com.protonvpn.android.di.WallClock
-import com.protonvpn.android.promooffers.usecase.GetEligibleIntroductoryOffers.CachedOffers
 import com.protonvpn.android.ui.planupgrade.IsInAppUpgradeAllowedUseCase
 import com.protonvpn.android.ui.planupgrade.getSingleCurrency
 import com.protonvpn.android.ui.planupgrade.usecase.LoadGoogleSubscriptionPlans
@@ -30,17 +29,13 @@ import com.protonvpn.android.utils.BytesFileWriter
 import com.protonvpn.android.utils.FileObjectStore
 import com.protonvpn.android.utils.KotlinCborObjectSerializer
 import com.protonvpn.android.utils.ObjectStore
-import com.protonvpn.android.utils.runCatchingCheckedExceptions
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.sentry.Sentry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
-import me.proton.core.network.domain.ApiException
-import me.proton.core.network.domain.ApiResult
 import me.proton.core.plan.presentation.entity.PlanCycle
 import java.io.File
 import javax.inject.Inject
@@ -143,7 +138,7 @@ class GetEligibleIntroductoryOffers(
         }
         return if (planNames.size == cachedOffers.size) {
             cachedOffers.flatMap { it.offers }
-        } else suspend {
+        } else try {
             val giapPlans = loadGoogleSubscriptionPlans(planNames)
 
             val introOffers = giapPlans.flatMap { plan ->
@@ -169,15 +164,9 @@ class GetEligibleIntroductoryOffers(
             }
             cache.update(planNames, clock(), introOffers)
             introOffers
-        }.runCatchingCheckedExceptions { e ->
-            if (shouldReportToSentry(e))
-                Sentry.captureException(GetIntroPricesError("Error fetching intro prices", e))
+        } catch (e: Exception) {
+            // Sentry report removed
             null
         }
     }
-
-    private fun shouldReportToSentry(throwable: Throwable?): Boolean =
-        throwable == null || (throwable as? ApiException)?.error !is ApiResult.Error.Connection
 }
-
-private class GetIntroPricesError(message: String, cause: Throwable) : Exception(message, cause)

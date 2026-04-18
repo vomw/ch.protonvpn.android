@@ -23,12 +23,7 @@ import com.protonvpn.android.logging.LogCategory;
 import com.protonvpn.android.logging.LogLevel;
 import com.protonvpn.android.logging.ProtonLogger;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.channels.FileChannel;
 import java.util.Locale;
-
-import io.sentry.Sentry;
 
 public final class Log {
 
@@ -41,10 +36,7 @@ public final class Log {
     }
 
     public static void exception(Throwable e) {
-        if (!BuildConfig.DEBUG) {
-            // FIXME Re-enable non-critical exception handling, once Sentry can handle higher loads
-            //    Sentry.capture(e);
-        }
+        // Tracker removed
     }
 
     public static void e(String message) {

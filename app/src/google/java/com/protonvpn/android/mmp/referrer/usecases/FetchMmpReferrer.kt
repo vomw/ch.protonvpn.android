@@ -20,71 +20,16 @@
 package com.protonvpn.android.mmp.referrer.usecases
 
 import android.content.Context
-import com.android.installreferrer.api.InstallReferrerClient
-import com.android.installreferrer.api.InstallReferrerStateListener
-import com.protonvpn.android.logging.LogCategory
-import com.protonvpn.android.logging.ProtonLogger
 import com.protonvpn.android.mmp.referrer.MmpReferrer
 import dagger.Reusable
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
-import kotlin.coroutines.resume
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 @Reusable
 class FetchMmpReferrer @Inject constructor(@param:ApplicationContext private val context: Context) {
 
-    @OptIn(ExperimentalUuidApi::class)
-    suspend fun getMmpReferrer(): MmpReferrer? = suspendCancellableCoroutine { continuation ->
-        InstallReferrerClient.newBuilder(context)
-            .build()
-            .apply {
-                startConnection(object : InstallReferrerStateListener {
-
-                    override fun onInstallReferrerSetupFinished(responseCode: Int) {
-                        when (responseCode) {
-                            InstallReferrerClient.InstallReferrerResponse.OK -> {
-                                installReferrer
-                                    .also { endConnection() }
-                                    .let { referrerDetails ->
-                                        MmpReferrer(
-                                            asid = Uuid.random().toString(),
-                                            referrerLink = referrerDetails.installReferrer,
-                                        )
-                                    }
-                                    .run(continuation::resume)
-                            }
-
-                            InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED -> {
-                                logFetchingInstallReferrerIssue(reason = "Feature not supported")
-
-                                continuation.resume(value = null)
-                            }
-
-                            InstallReferrerClient.InstallReferrerResponse.SERVICE_UNAVAILABLE -> {
-                                logFetchingInstallReferrerIssue(reason = "Service unavailable")
-
-                                continuation.resume(value = null)
-                            }
-                        }
-                    }
-
-                    override fun onInstallReferrerServiceDisconnected() {
-                        logFetchingInstallReferrerIssue(reason = "Service disconnected")
-
-                        continuation.resume(value = null)
-                    }
-                })
-            }
-    }
-
-    private fun logFetchingInstallReferrerIssue(reason: String) {
-        ProtonLogger.logCustom(
-            category = LogCategory.MMP,
-            message = "Cannot fetch install referrer: $reason",
-        )
+    suspend fun getMmpReferrer(): MmpReferrer? {
+        return null // Tracker removed
     }
 
 }

@@ -30,7 +30,6 @@ import com.protonvpn.android.ui.home.ServerListUpdaterPrefs
 import com.protonvpn.android.utils.runCatchingCheckedExceptions
 import com.protonvpn.android.utils.stacktraceMessage
 import dagger.Reusable
-import io.sentry.Sentry
 import uniffi.proton_vpn_binary_status.computeLoadsUniffi
 import javax.inject.Inject
 import uniffi.proton_vpn_binary_status.Location as UniffiLocation
@@ -40,8 +39,6 @@ import uniffi.proton_vpn_binary_status.StatusReference as UniffiStatusReference
 interface UpdateServersWithBinaryStatus {
     operator fun invoke(serversToUpdate: List<Server>, statusData: ByteArray): List<Server>?
 }
-
-private class BinaryStatusProcessingError(message: String) : Exception(message)
 
 @Reusable
 class UpdateServersWithBinaryStatusImpl @Inject constructor(
@@ -72,7 +69,7 @@ class UpdateServersWithBinaryStatusImpl @Inject constructor(
             logAndReportToSentry("some servers have missing fields: ${serversToUpdate.size - uniffiLogicals.size}")
         }
 
-        return {
+        return try {
             val loads = computeLoadsUniffi(
                 logicals = uniffiLogicals,
                 statusFile = statusData,
@@ -92,7 +89,7 @@ class UpdateServersWithBinaryStatusImpl @Inject constructor(
                 logAndReportToSentry("incorrect number of results: server=${serversToUpdate.size} vs loads=${loads.size}")
                 null
             }
-        }.runCatchingCheckedExceptions { e ->
+        } catch (e: Exception) {
             logAndReportToSentry(e)
             null
         }
@@ -117,12 +114,12 @@ class UpdateServersWithBinaryStatusImpl @Inject constructor(
     }
 
     private fun logAndReportToSentry(message: String) {
-        Sentry.captureException(BinaryStatusProcessingError(message))
+        // Sentry report removed
         logError(message)
     }
 
     private fun logAndReportToSentry(e: Throwable) {
-        Sentry.captureException(e)
+        // Sentry report removed
         logError("${e.message}\n${e.stacktraceMessage()}")
     }
 
