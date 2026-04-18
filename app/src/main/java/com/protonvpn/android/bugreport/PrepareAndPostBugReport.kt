@@ -28,8 +28,7 @@ import com.protonvpn.android.auth.usecase.CurrentUser
 import com.protonvpn.android.logging.ProtonLogger
 import com.protonvpn.android.models.login.GenericResponse
 import com.protonvpn.android.tv.IsTvCheck
-import com.protonvpn.android.ui.home.ServerListUpdater
-import com.protonvpn.android.utils.SentryIntegration
+
 import dagger.Reusable
 import me.proton.core.network.domain.ApiResult
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -53,8 +52,7 @@ class PrepareAndPostBugReport @Inject constructor(
         userGeneratedDescription: String,
         attachLog: Boolean
     ): ApiResult<GenericResponse> {
-        val description =
-            "$userGeneratedDescription\n\nSentry user ID: ${SentryIntegration.getInstallationId()}"
+        val description = userGeneratedDescription
         val client = if (isTv()) "Android TV app" else "Android app"
         val builder: MultipartBody.Builder = MultipartBody.Builder().setType(MultipartBody.Companion.FORM)
             .addFormDataPart("Client", client)

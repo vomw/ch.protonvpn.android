@@ -37,7 +37,6 @@ import com.protonvpn.android.logging.logUiSettingChange
 import com.protonvpn.android.settings.data.CurrentUserLocalSettingsManager
 import com.protonvpn.android.utils.Constants
 import com.protonvpn.android.utils.HtmlTools
-import com.protonvpn.android.utils.SentryIntegration
 import com.protonvpn.android.utils.applySystemBarInsets
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -99,9 +98,7 @@ class SettingsTelemetryFragment : Fragment(R.layout.fragment_telemetry_settings)
     }
 
     private fun initSendCrashReportsToggle() = with(binding) {
-        switchSendCrashReports.isChecked = SentryIntegration.isEnabled()
-        switchSendCrashReports.setOnCheckedChangeListener { _, isChecked ->
-            SentryIntegration.setEnabled(isChecked)
-        }
+        switchSendCrashReports.isChecked = false
+        switchSendCrashReports.isEnabled = false
     }
 }

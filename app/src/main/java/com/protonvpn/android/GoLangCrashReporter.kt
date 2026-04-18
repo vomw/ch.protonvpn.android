@@ -19,23 +19,15 @@
 package com.protonvpn.android
 
 import android.content.Context
-import android.os.Build
-import com.protonvpn.android.auth.usecase.CurrentUser
 import com.protonvpn.android.concurrency.VpnDispatcherProvider
-import com.protonvpn.android.logging.AppCrash
 import com.protonvpn.android.logging.LogCategory
 import com.protonvpn.android.logging.ProtonLogger
-import dagger.Reusable
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import me.proton.core.featureflag.domain.ExperimentalProtonFeatureFlag
-import me.proton.core.featureflag.domain.FeatureFlagManager
-import me.proton.core.featureflag.domain.entity.FeatureId
 import okhttp3.internal.closeQuietly
 import java.io.File
 import java.io.FileOutputStream
@@ -45,34 +37,15 @@ import javax.inject.Singleton
 
 private const val MAX_CHARS = 4000
 private const val CHANNEL_BUFFER_SIZE = 40
-private const val REPORTER_DELAY_MS = 10_000L
-
-@OptIn(ExperimentalProtonFeatureFlag::class)
-@Reusable
-class GoLangSendCrashesToSentryEnabled @Inject constructor(
-    private val currentUser: CurrentUser,
-    private val featureFlagManager: FeatureFlagManager
-) {
-    suspend operator fun invoke() = false // Tracker removed
-
-    companion object {
-        const val FLAG_ID = "GoLangSendCrashesToSentryEnabled"
-    }
-}
 
 @Singleton
 class GoLangCrashReporter @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val mainScope: CoroutineScope,
     private val dispatcherProvider: VpnDispatcherProvider,
-    private val goLangSendCrashesToSentryEnabled: GoLangSendCrashesToSentryEnabled,
 ) {
     fun start() {
-        mainScope.launch(dispatcherProvider.Io) {
-            if (goLangSendCrashesToSentryEnabled()) {
-                // Tracker removed
-            }
-        }
+        // Tracker removed
     }
 }
 

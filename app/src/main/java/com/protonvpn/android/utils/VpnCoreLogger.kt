@@ -25,7 +25,6 @@ import com.protonvpn.android.logging.ApiLogResponse
 import com.protonvpn.android.logging.LogCategory
 import com.protonvpn.android.logging.LogLevel
 import com.protonvpn.android.logging.ProtonLogger
-import me.proton.core.util.android.sentry.TimberLogger
 import me.proton.core.util.kotlin.Logger
 import me.proton.core.accountmanager.domain.LogTag as AccountLogTag
 import me.proton.core.crypto.common.keystore.LogTag as KeystoreLogTag
@@ -35,65 +34,53 @@ import me.proton.core.network.domain.LogTag as NetworkLogTag
 // Core logs full response body in debug, truncate it.
 private const val MAX_DEBUG_MSG_LENGTH = 500
 
-class VpnCoreLogger : Logger by TimberLogger {
+class VpnCoreLogger : Logger {
 
     override fun e(tag: String, message: String) {
-        TimberLogger.e(tag, message)
         forwardToProtonLogger(tag, LogLevel.ERROR, message)
     }
 
     override fun e(tag: String, e: Throwable) {
-        TimberLogger.e(tag, e)
         forwardToProtonLogger(tag, LogLevel.ERROR, messageWithError(tag, "no message", e))
     }
 
     override fun e(tag: String, e: Throwable, message: String) {
-        TimberLogger.e(tag, e, message)
         forwardToProtonLogger(tag, LogLevel.ERROR, messageWithError(tag, message, e))
     }
 
     override fun i(tag: String, message: String) {
-        TimberLogger.i(tag, message)
         forwardToProtonLogger(tag, LogLevel.INFO, message)
     }
 
     override fun i(tag: String, e: Throwable, message: String) {
-        TimberLogger.i(tag, e, message)
         forwardToProtonLogger(tag, LogLevel.INFO, messageWithError(tag, message, e))
     }
 
     override fun w(tag: String, message: String) {
-        TimberLogger.w(tag, message)
         forwardToProtonLogger(tag, LogLevel.WARN, message)
     }
 
     override fun w(tag: String, e: Throwable) {
-        TimberLogger.w(tag, e)
         forwardToProtonLogger(tag, LogLevel.WARN, messageWithError(tag,"no message", e))
     }
 
     override fun w(tag: String, e: Throwable, message: String) {
-        TimberLogger.w(tag, e, message)
         forwardToProtonLogger(tag, LogLevel.WARN, messageWithError(tag, message, e))
     }
 
     override fun d(tag: String, message: String) {
-        TimberLogger.d(tag, message)
         forwardToProtonLogger(tag, LogLevel.DEBUG, message.take(MAX_DEBUG_MSG_LENGTH))
     }
 
     override fun d(tag: String, e: Throwable, message: String) {
-        TimberLogger.d(tag, e, message)
         forwardToProtonLogger(tag, LogLevel.DEBUG, messageWithError(tag, message, e))
     }
 
     override fun v(tag: String, message: String) {
-        TimberLogger.v(tag, message)
         forwardToProtonLogger(tag, LogLevel.TRACE, message)
     }
 
     override fun v(tag: String, e: Throwable, message: String) {
-        TimberLogger.v(tag, e, message)
         forwardToProtonLogger(tag, LogLevel.TRACE, messageWithError(tag, message, e))
     }
 

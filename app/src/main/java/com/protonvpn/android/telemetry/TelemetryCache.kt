@@ -76,8 +76,8 @@ class TelemetryCache @Inject constructor(
         mainScope.launch(serialIo) {
             try {
                 @Suppress("BlockingMethodInNonBlockingContext")
-                FileWriter(getFile()).use {
-                    it.forEach { event ->
+                FileWriter(getFile()).use { writer ->
+                    eventsToSave.forEach { event ->
                         writer.write(json.encodeToString(event))
                         writer.write("\n")
                     }
