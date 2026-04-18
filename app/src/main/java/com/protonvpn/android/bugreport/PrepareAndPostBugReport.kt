@@ -28,6 +28,7 @@ import com.protonvpn.android.auth.usecase.CurrentUser
 import com.protonvpn.android.logging.ProtonLogger
 import com.protonvpn.android.models.login.GenericResponse
 import com.protonvpn.android.tv.IsTvCheck
+import com.protonvpn.android.ui.home.ServerListUpdater
 
 import dagger.Reusable
 import me.proton.core.network.domain.ApiResult
