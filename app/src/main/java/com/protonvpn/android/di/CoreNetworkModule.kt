@@ -19,6 +19,7 @@
 package com.protonvpn.android.di
 
 import android.content.Context
+import com.protonvpn.android.api.WebProxyInterceptor
 import com.protonvpn.android.vpn.VpnDns
 import dagger.Binds
 import dagger.Module
@@ -188,6 +189,7 @@ public class CoreBaseNetworkModule {
     internal fun provideOkHttpClient(vpnDns: VpnDns): OkHttpClient =
         OkHttpClient().newBuilder()
             .dns(vpnDns)
+            .addInterceptor(WebProxyInterceptor())
             .build()
 
     @Provides

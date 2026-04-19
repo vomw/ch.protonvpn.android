@@ -48,8 +48,6 @@ import com.protonvpn.android.appconfig.globalsettings.GlobalSettingUpdateSchedul
 import com.protonvpn.android.appconfig.globalsettings.GlobalSettingsUpdateWorker
 import com.protonvpn.android.appconfig.periodicupdates.PeriodicUpdateManager
 import com.protonvpn.android.appconfig.periodicupdates.PeriodicUpdateManagerImpl
-import com.protonvpn.android.appconfig.periodicupdates.PeriodicUpdateWorkerScheduler
-import com.protonvpn.android.appconfig.periodicupdates.PeriodicUpdateWorkerSchedulerImpl
 import com.protonvpn.android.api.WebProxyConfig
 import com.protonvpn.android.auth.usecase.CurrentUser
 import com.protonvpn.android.auth.usecase.CurrentUserProvider
@@ -193,10 +191,6 @@ annotation class ElapsedRealtimeClock
 @Retention(AnnotationRetention.BINARY)
 annotation class WallClock
 
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class ServerProxyUrl
-
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModuleProd {
@@ -218,21 +212,6 @@ object AppModuleProd {
     @BaseProtonApiUrl
     fun provideProtonApiUrl(environmentConfiguration: EnvironmentConfiguration): HttpUrl =
         environmentConfiguration.baseUrl.toHttpUrl()
-
-    @Singleton
-    @Provides
-    @ServerProxyUrl
-    fun provideServerProxyUrl(environmentConfiguration: EnvironmentConfiguration): HttpUrl {
-        val originalUrl = environmentConfiguration.baseUrl.toHttpUrl()
-        return if (WebProxyConfig.isProxyEnabled) {
-            WebProxyConfig.proxyUrl.toHttpUrl().newBuilder()
-                .addPathSegment(originalUrl.host)
-                .addPathSegment("") // ensure trailing slash
-                .build()
-        } else {
-            originalUrl
-        }
-    }
 
     @Provides
     @DohProviderUrls
@@ -316,9 +295,6 @@ object AppModuleProd {
 
         @Binds
         fun bindProtonApiRetrofit(impl: ProtonApiRetroFitImpl): ProtonApiRetroFit
-
-        @Binds
-        fun bindPeriodicUpdateWorkerScheduler(sched: PeriodicUpdateWorkerSchedulerImpl): PeriodicUpdateWorkerScheduler
 
         @Binds
         @Singleton

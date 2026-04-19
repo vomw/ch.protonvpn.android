@@ -36,4 +36,9 @@ object WebProxyConfig {
      * the resulting base URL will be "https://cors.eu.org/vpn-api.proton.me/".
      */
     const val proxyUrl = "https://cors.eu.org"
+
+    /**
+     * Internal header to trigger proxying in [WebProxyInterceptor].
+     */
+    const val HEADER_USE_PROXY = "X-Internal-Use-Web-Proxy"
 }
