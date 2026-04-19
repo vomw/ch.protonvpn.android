@@ -81,14 +81,14 @@ class LogcatLogCapture @Inject constructor(
                             val tag = parts[0].trim()
                             val msg = parts[1]
                             val category = when (tag) {
-                                "charon" -> LogCategory.IKELIB
-                                "WireGuard/WireGuardGoBackend/VPN" -> LogCategory.WIREGUARDLIB
-                                "WireGuard/WireGuardGoBackend/GoLog", "GoLog" -> LogCategory.WIREGUARDLIB
+                                "charon" -> LogCategory.CONN
+                                "WireGuard/WireGuardGoBackend/VPN" -> LogCategory.CONN_WIREGUARD
+                                "WireGuard/WireGuardGoBackend/GoLog", "GoLog" -> LogCategory.CONN_WIREGUARD
                                 else -> LogCategory.APP
                             }
                             ProtonLogger.logCustom(LogLevel.INFO, category, msg)
 
-                            if (category == LogCategory.WIREGUARDLIB) {
+                            if (category == LogCategory.CONN_WIREGUARD) {
                                 goLangCrashLogger.get().onErrorLine(msg)
                             }
                         }
