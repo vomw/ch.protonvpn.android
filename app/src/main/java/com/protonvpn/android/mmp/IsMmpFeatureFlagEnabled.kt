@@ -22,6 +22,8 @@ package com.protonvpn.android.mmp
 import com.protonvpn.android.base.data.FakeVpnFeatureFlag
 import com.protonvpn.android.base.data.VpnFeatureFlag
 import dagger.Reusable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 
 interface IsMmpFeatureFlagEnabled : VpnFeatureFlag
@@ -29,6 +31,7 @@ interface IsMmpFeatureFlagEnabled : VpnFeatureFlag
 @Reusable
 class IsMmpFeatureFlagEnabledImpl @Inject constructor() : IsMmpFeatureFlagEnabled {
     override suspend fun invoke(): Boolean = false
+    override fun observe(): Flow<Boolean> = flowOf(false)
 }
 
 class FakeIsMmpFeatureFlagEnabled(
