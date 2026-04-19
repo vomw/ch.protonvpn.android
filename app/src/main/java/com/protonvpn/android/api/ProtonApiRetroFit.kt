@@ -42,6 +42,7 @@ import com.protonvpn.android.models.vpn.ServerSearchResponse
 import com.protonvpn.android.models.vpn.UserLocation
 import com.protonvpn.android.promooffers.data.ApiNotificationsResponse
 import com.protonvpn.android.promooffers.usecase.PostNps
+import com.protonvpn.android.di.ServerProxyUrl
 import com.protonvpn.android.servers.api.CityTranslationsResponse
 import com.protonvpn.android.servers.api.ConnectingDomainResponse
 import com.protonvpn.android.servers.api.LoadsResponse
@@ -51,9 +52,11 @@ import com.protonvpn.android.servers.api.ServersCountResponse
 import com.protonvpn.android.servers.api.StreamingServicesResponse
 import com.protonvpn.android.telemetry.StatsBody
 import com.protonvpn.android.telemetry.StatsEvent
+import me.proton.core.network.data.ApiProvider
 import me.proton.core.network.domain.ApiResult
 import me.proton.core.network.domain.TimeoutOverride
 import me.proton.core.network.domain.session.SessionId
+import okhttp3.HttpUrl
 import okhttp3.RequestBody
 import retrofit2.Response
 import java.net.URLEncoder
@@ -144,6 +147,8 @@ interface ProtonApiRetroFit {
 @Singleton
 class ProtonApiRetroFitImpl @Inject constructor(
     private val manager: VpnApiManager,
+    private val apiProvider: ApiProvider,
+    @ServerProxyUrl private val serverProxyUrl: HttpUrl,
     private val userCountryTelephonyBased: UserCountryTelephonyBased,
     private val userCountry: UserCountryPhysical,
     private val debugApiPrefs: DebugApiPrefs?,
@@ -172,7 +177,7 @@ class ProtonApiRetroFitImpl @Inject constructor(
         lastModified: Long,
         enableTruncation: Boolean,
         mustHaveIDs: Set<String>?,
-    ) = manager {
+    ) = proxyManager {
         getServersV1(
             timeoutOverride = TimeoutOverride(readTimeoutSeconds = 20),
             headers = createLogicalsHeaders(netzone, lastModified, enableTruncation),
@@ -189,7 +194,7 @@ class ProtonApiRetroFitImpl @Inject constructor(
         lastModified: Long,
         enableTruncation: Boolean,
         mustHaveIDs: Set<String>?,
-    ) = manager {
+    ) = proxyManager {
         getServers(
             timeoutOverride = TimeoutOverride(readTimeoutSeconds = 20),
             headers = createLogicalsHeaders(netzone, lastModified, enableTruncation),
@@ -200,10 +205,10 @@ class ProtonApiRetroFitImpl @Inject constructor(
     }
 
     override suspend fun getServerByName(nameQuery: String) =
-        manager { getServerByName(nameQuery) }
+        proxyManager { getServerByName(nameQuery) }
 
     override suspend fun getLoads(netzone: String?) =
-        manager {
+        proxyManager {
             getLoads(
                 headers = createNetZoneHeaders(netzone),
                 userTier = null
@@ -211,7 +216,7 @@ class ProtonApiRetroFitImpl @Inject constructor(
         }
 
     override suspend fun getBinaryStatus(statusId: String) =
-        manager { getBinaryStatus(statusId) }
+        proxyManager { getBinaryStatus(statusId) }
 
     override suspend fun getStreamingServices() =
         manager { getStreamingServices() }
@@ -275,6 +280,9 @@ class ProtonApiRetroFitImpl @Inject constructor(
 
     override suspend fun putTelemetryGlobalSetting(isEnabled: Boolean): ApiResult<GlobalSettingsResponse> =
         manager { putTelemetryGlobalSetting(UpdateGlobalTelemetry(isEnabled)) }
+
+    private suspend fun <T> proxyManager(block: suspend ProtonVPNRetrofit.() -> T): ApiResult<T> =
+        apiProvider.get<ProtonVPNRetrofit>(null, serverProxyUrl).invoke(false, block)
 
     private fun createNetZoneHeaders(netzone: String?) =
         mutableMapOf<String, String>().apply {

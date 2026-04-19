@@ -193,6 +193,10 @@ annotation class ElapsedRealtimeClock
 @Retention(AnnotationRetention.BINARY)
 annotation class WallClock
 
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ServerProxyUrl
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModuleProd {
@@ -212,7 +216,13 @@ object AppModuleProd {
     @Singleton
     @Provides
     @BaseProtonApiUrl
-    fun provideProtonApiUrl(environmentConfiguration: EnvironmentConfiguration): HttpUrl {
+    fun provideProtonApiUrl(environmentConfiguration: EnvironmentConfiguration): HttpUrl =
+        environmentConfiguration.baseUrl.toHttpUrl()
+
+    @Singleton
+    @Provides
+    @ServerProxyUrl
+    fun provideServerProxyUrl(environmentConfiguration: EnvironmentConfiguration): HttpUrl {
         val originalUrl = environmentConfiguration.baseUrl.toHttpUrl()
         return if (WebProxyConfig.isProxyEnabled) {
             WebProxyConfig.proxyUrl.toHttpUrl().newBuilder()
