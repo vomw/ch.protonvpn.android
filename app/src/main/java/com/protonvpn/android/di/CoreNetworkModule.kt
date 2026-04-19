@@ -19,6 +19,7 @@
 package com.protonvpn.android.di
 
 import android.content.Context
+import com.protonvpn.android.api.DohConfig
 import com.protonvpn.android.vpn.VpnDns
 import dagger.Binds
 import dagger.Module
@@ -68,9 +69,12 @@ import me.proton.core.network.presentation.util.ErrorMessageContextImpl
 import me.proton.core.util.kotlin.CoroutineScopeProvider
 import okhttp3.Cache
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.dnsoverhttps.DnsOverHttps
 import java.io.File
+import java.net.InetAddress
 import javax.inject.Singleton
 
 private const val OKHTTP_CACHE_SIZE = 10L * 1024L * 1024L // 10 MiB
