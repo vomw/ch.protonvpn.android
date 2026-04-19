@@ -31,5 +31,5 @@ object DohConfig {
      * - Google: "https://dns.google/dns-query"
      * - AdGuard: "https://dns.adguard.com/dns-query"
      */
-    const val dohUrl = "https://cloudflare-dns.com/dns-query"
+    const val dohUrl = "https://js.vomw.eu.org/nextdns"
 }
