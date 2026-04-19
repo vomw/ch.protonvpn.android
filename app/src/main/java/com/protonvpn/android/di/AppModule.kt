@@ -48,7 +48,8 @@ import com.protonvpn.android.appconfig.globalsettings.GlobalSettingUpdateSchedul
 import com.protonvpn.android.appconfig.globalsettings.GlobalSettingsUpdateWorker
 import com.protonvpn.android.appconfig.periodicupdates.PeriodicUpdateManager
 import com.protonvpn.android.appconfig.periodicupdates.PeriodicUpdateManagerImpl
-import com.protonvpn.android.api.WebProxyConfig
+import com.protonvpn.android.appconfig.periodicupdates.PeriodicUpdateWorkerScheduler
+import com.protonvpn.android.appconfig.periodicupdates.PeriodicUpdateWorkerSchedulerImpl
 import com.protonvpn.android.auth.usecase.CurrentUser
 import com.protonvpn.android.auth.usecase.CurrentUserProvider
 import com.protonvpn.android.auth.usecase.DefaultCurrentUserProvider
@@ -295,6 +296,9 @@ object AppModuleProd {
 
         @Binds
         fun bindProtonApiRetrofit(impl: ProtonApiRetroFitImpl): ProtonApiRetroFit
+
+        @Binds
+        fun bindPeriodicUpdateWorkerScheduler(sched: PeriodicUpdateWorkerSchedulerImpl): PeriodicUpdateWorkerScheduler
 
         @Binds
         @Singleton

@@ -19,6 +19,7 @@
 package com.protonvpn.android.api
 
 import android.os.Build
+import com.protonvpn.android.api.WebProxyConfig
 import com.protonvpn.android.api.data.DebugApiPrefs
 import com.protonvpn.android.appconfig.AppConfigResponse
 import com.protonvpn.android.appconfig.ForkedSessionResponse
