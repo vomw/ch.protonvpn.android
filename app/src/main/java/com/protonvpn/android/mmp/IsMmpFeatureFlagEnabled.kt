@@ -19,26 +19,17 @@
 
 package com.protonvpn.android.mmp
 
-import com.protonvpn.android.auth.usecase.CurrentUser
 import com.protonvpn.android.base.data.FakeVpnFeatureFlag
 import com.protonvpn.android.base.data.VpnFeatureFlag
-import com.protonvpn.android.base.data.VpnFeatureFlagImpl
 import dagger.Reusable
-import me.proton.core.featureflag.domain.FeatureFlagManager
-import me.proton.core.featureflag.domain.entity.FeatureId
 import javax.inject.Inject
 
 interface IsMmpFeatureFlagEnabled : VpnFeatureFlag
 
 @Reusable
-class IsMmpFeatureFlagEnabledImpl @Inject constructor(
-    currentUser: CurrentUser,
-    featureFlagManager: FeatureFlagManager,
-) : IsMmpFeatureFlagEnabled, VpnFeatureFlagImpl(
-    currentUser = currentUser,
-    featureFlagManager = featureFlagManager,
-    featureId = FeatureId(id = "MMPEnabled"),
-)
+class IsMmpFeatureFlagEnabledImpl @Inject constructor() : IsMmpFeatureFlagEnabled {
+    override suspend fun invoke(): Boolean = false
+}
 
 class FakeIsMmpFeatureFlagEnabled(
     enabled: Boolean,

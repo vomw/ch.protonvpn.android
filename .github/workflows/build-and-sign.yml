@@ -48,16 +48,22 @@ jobs:
         id: names
         run: |
           # Extract versioning information using the Gradle task defined in the codebase
-          ./gradlew :app:getExportArchiveNameProperties > props.txt
-          VERSION_NAME=$(sed -n '2p' props.txt)
+          # Use -q to suppress gradle lifecycle messages
+          ./gradlew :app:getExportArchiveNameProperties -q > props.txt
+          
+          # The task prints: archivesBaseName, fullVersionName, versionCode
+          VERSION_NAME=$(sed -n '2p' props.txt | tr -d '\r\n')
           
           # Package ID is ch.protonvpn.android
           PACKAGE_ID="ch.protonvpn.android"
           
           # Construct the filename as requested: {packageId}-v{version}.apk
-          NEW_NAME="${PACKAGE_ID}-v${VERSION_NAME}.apk"
+          # Sanitize version name to remove any unexpected whitespace
+          CLEAN_VERSION=$(echo "$VERSION_NAME" | xargs)
+          NEW_NAME="${PACKAGE_ID}-v${CLEAN_VERSION}.apk"
           
           # The signed APK is produced by the sign-android-release action
+          # We use the output from the sign_app step for maximum reliability
           SIGNED_APK_PATH="${{ steps.sign_app.outputs.signedReleaseFile }}"
           
           if [ -f "$SIGNED_APK_PATH" ]; then
@@ -65,8 +71,16 @@ jobs:
             echo "NEW_NAME=$NEW_NAME" >> $GITHUB_OUTPUT
             echo "Successfully prepared artifact: $NEW_NAME"
           else
-            echo "Error: Signed APK not found at $SIGNED_APK_PATH"
-            exit 1
+            # Fallback check if the output variable is somehow empty
+            FALLBACK_PATH=$(find app/build/outputs/apk/productionVanillaDirect/release -name "*-signed.apk" | head -n 1)
+            if [ -f "$FALLBACK_PATH" ]; then
+                cp "$FALLBACK_PATH" "./$NEW_NAME"
+                echo "NEW_NAME=$NEW_NAME" >> $GITHUB_OUTPUT
+                echo "Successfully prepared artifact from fallback: $NEW_NAME"
+            else
+                echo "Error: Signed APK not found"
+                exit 1
+            fi
           fi
 
       - name: Upload Artifact
