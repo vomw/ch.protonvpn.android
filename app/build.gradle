@@ -716,6 +716,7 @@ dependencies {
     implementation(platform(libs.kotlin.bom))
 
     implementation(libs.dnsjava.dnsjava)
+    implementation(libs.okhttp3.dnsoverhttps)
     implementation(libs.java.jna) {
         artifact {
             type = "aar"

@@ -19,7 +19,6 @@
 package com.protonvpn.android.di
 
 import android.content.Context
-import com.protonvpn.android.api.WebProxyInterceptor
 import com.protonvpn.android.vpn.VpnDns
 import dagger.Binds
 import dagger.Module
@@ -186,11 +185,26 @@ public class CoreBaseNetworkModule {
     @Provides
     @Singleton
     @SharedOkHttpClient
-    internal fun provideOkHttpClient(vpnDns: VpnDns): OkHttpClient =
-        OkHttpClient().newBuilder()
-            .dns(vpnDns)
-            .addInterceptor(WebProxyInterceptor())
+    internal fun provideOkHttpClient(vpnDns: VpnDns): OkHttpClient {
+        val bootstrapClient = OkHttpClient.Builder()
+            .dns(vpnDns) // Use default/VPN DNS to bootstrap the DoH provider
             .build()
+
+        val dns = DnsOverHttps.Builder()
+            .client(bootstrapClient)
+            .url(DohConfig.dohUrl.toHttpUrl())
+            .bootstrapDnsHosts(listOf(
+                InetAddress.getByName("1.1.1.1"),
+                InetAddress.getByName("1.0.0.1"),
+                InetAddress.getByName("8.8.8.8"),
+                InetAddress.getByName("8.8.4.4")
+            ))
+            .build()
+
+        return OkHttpClient().newBuilder()
+            .dns(dns)
+            .build()
+    }
 
     @Provides
     @Singleton

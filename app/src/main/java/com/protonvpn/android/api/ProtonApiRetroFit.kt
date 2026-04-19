@@ -19,7 +19,6 @@
 package com.protonvpn.android.api
 
 import android.os.Build
-import com.protonvpn.android.api.WebProxyConfig
 import com.protonvpn.android.api.data.DebugApiPrefs
 import com.protonvpn.android.appconfig.AppConfigResponse
 import com.protonvpn.android.appconfig.ForkedSessionResponse
@@ -176,7 +175,7 @@ class ProtonApiRetroFitImpl @Inject constructor(
     ) = manager {
         getServersV1(
             timeoutOverride = TimeoutOverride(readTimeoutSeconds = 20),
-            headers = createLogicalsHeaders(netzone, lastModified, enableTruncation) + proxyHeader(),
+            headers = createLogicalsHeaders(netzone, lastModified, enableTruncation),
             protocols = protocols.joinToString(","),
             withState = true,
             userTier = null,
@@ -193,7 +192,7 @@ class ProtonApiRetroFitImpl @Inject constructor(
     ) = manager {
         getServers(
             timeoutOverride = TimeoutOverride(readTimeoutSeconds = 20),
-            headers = createLogicalsHeaders(netzone, lastModified, enableTruncation) + proxyHeader(),
+            headers = createLogicalsHeaders(netzone, lastModified, enableTruncation),
             protocols = protocols.joinToString(","),
             withState = true,
             includeIDs = mustHaveIDs.takeIf { enableTruncation }?.encodeParamSet()
@@ -201,19 +200,18 @@ class ProtonApiRetroFitImpl @Inject constructor(
     }
 
     override suspend fun getServerByName(nameQuery: String) =
-        manager { getServerByName(nameQuery, if (WebProxyConfig.isProxyEnabled) "true" else null) }
+        manager { getServerByName(nameQuery) }
 
     override suspend fun getLoads(netzone: String?) =
         manager {
             getLoads(
-                headers = createNetZoneHeaders(netzone) + proxyHeader(),
-                userTier = null,
-                useProxy = if (WebProxyConfig.isProxyEnabled) "true" else null
+                headers = createNetZoneHeaders(netzone),
+                userTier = null
             )
         }
 
     override suspend fun getBinaryStatus(statusId: String) =
-        manager { getBinaryStatus(statusId, if (WebProxyConfig.isProxyEnabled) "true" else null) }
+        manager { getBinaryStatus(statusId) }
 
     override suspend fun getStreamingServices() =
         manager { getStreamingServices() }
@@ -277,9 +275,6 @@ class ProtonApiRetroFitImpl @Inject constructor(
 
     override suspend fun putTelemetryGlobalSetting(isEnabled: Boolean): ApiResult<GlobalSettingsResponse> =
         manager { putTelemetryGlobalSetting(UpdateGlobalTelemetry(isEnabled)) }
-
-    private fun proxyHeader(): Map<String, String> =
-        if (WebProxyConfig.isProxyEnabled) mapOf(WebProxyConfig.HEADER_USE_PROXY to "true") else emptyMap()
 
     private fun createNetZoneHeaders(netzone: String?) =
         mutableMapOf<String, String>().apply {

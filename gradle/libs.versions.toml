@@ -198,6 +198,7 @@ mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "moc
 okhttp3 = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp3-version" }
 okhttp3-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp3-version" }
 okhttp3-tls = { group = "com.squareup.okhttp3", name = "okhttp-tls", version.ref = "okhttp3-version" }
+okhttp3-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverhttps", version.ref = "okhttp3-version" }
 proton-core-account = { group = "me.proton.core", name = "account", version.ref = "proton-core-version" }
 proton-core-account-data = { group = "me.proton.core", name = "account-data", version.ref = "proton-core-version" }
 proton-core-account-manager-data = { group = "me.proton.core", name = "account-manager-data", version.ref = "proton-core-version" }

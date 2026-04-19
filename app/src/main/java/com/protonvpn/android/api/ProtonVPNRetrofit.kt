@@ -95,20 +95,17 @@ interface ProtonVPNRetrofit : BaseRetrofitApi {
     @GET("vpn/v1/logicals/lookup/{nameQuery}")
     suspend fun getServerByName(
         @Path(value = "nameQuery", encoded = true) nameQuery: String,
-        @Header(WebProxyConfig.HEADER_USE_PROXY) useProxy: String? = "true"
     ): ServerSearchResponse
 
     @GET("vpn/v1/loads")
     suspend fun getLoads(
         @HeaderMap headers: Map<String, String>,
         @Query("Tier") userTier: Int?,
-        @Header(WebProxyConfig.HEADER_USE_PROXY) useProxy: String? = "true"
     ): LoadsResponse
 
     @GET("vpn/v2/status/{id}/binary")
     suspend fun getBinaryStatus(
         @Path(value = "id", encoded = true) id: String,
-        @Header(WebProxyConfig.HEADER_USE_PROXY) useProxy: String? = "true"
     ): ByteArray
 
     @GET("vpn/v1/streamingservices")

@@ -20,25 +20,16 @@
 package com.protonvpn.android.api
 
 /**
- * Central configuration for Web Proxy to access VPN API.
- * This can be used to bypass ISP blocks on vpn-api.proton.me.
+ * Central configuration for DNS over HTTPS (DoH).
+ * All DNS resolution in the app is forced through this provider.
  */
-object WebProxyConfig {
+object DohConfig {
     /**
-     * Set to true to enable web proxy.
+     * The DoH server URL to use for all DNS resolution in the app.
+     * Common providers:
+     * - Cloudflare: "https://cloudflare-dns.com/dns-query"
+     * - Google: "https://dns.google/dns-query"
+     * - AdGuard: "https://dns.adguard.com/dns-query"
      */
-    const val isProxyEnabled = true
-
-    /**
-     * The URL of the web proxy.
-     * The target host will be appended as a path segment.
-     * Example: if proxyUrl is "https://cors.eu.org" and target host is "vpn-api.proton.me",
-     * the resulting base URL will be "https://cors.eu.org/vpn-api.proton.me/".
-     */
-    const val proxyUrl = "https://cors.eu.org"
-
-    /**
-     * Internal header to trigger proxying in [WebProxyInterceptor].
-     */
-    const val HEADER_USE_PROXY = "X-Internal-Use-Web-Proxy"
+    const val dohUrl = "https://cloudflare-dns.com/dns-query"
 }
