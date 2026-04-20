@@ -13,3 +13,4 @@ pmcrypto/build/
 app/src/androidTest/assets/sensitive/
 job-logs.txt
 problems-report.html
+ch.protonvpn.android.log
