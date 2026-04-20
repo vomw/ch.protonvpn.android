@@ -133,7 +133,7 @@ class PrepareForConnection @Inject constructor(
 
     private fun samplePorts(list: List<Int>, count: Int, primaryPort: Int? = null) =
         if (primaryPort != null && list.contains(primaryPort))
-            list.filter { it != primaryPort }.takeRandomStable(count - 1) + primaryPort
+            listOf(primaryPort) + list.filter { it != primaryPort }.takeRandomStable(count - 1)
         else
             list.takeRandomStable(count)
 }

@@ -75,7 +75,7 @@ class ServerPing @Inject constructor(
         port: Int,
         pingData: ByteArray,
         tcp: Boolean,
-        timeout: Int = 5000
+        timeout: Int = 2000
     ): Boolean = withContext(dispatcherProvider.Io) {
         suspendCancellableCoroutine<Boolean> { continuation ->
             val result = try {

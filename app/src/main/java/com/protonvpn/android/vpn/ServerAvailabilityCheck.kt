@@ -29,7 +29,7 @@ import me.proton.core.util.kotlin.filterNullValues
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val SCAN_TIMEOUT_MILLIS = 5000
+private const val SCAN_TIMEOUT_MILLIS = 2000
 
 @Singleton
 class ServerAvailabilityCheck @Inject constructor(val serverPing: ServerPing) {
