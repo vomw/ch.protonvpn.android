@@ -37,14 +37,18 @@ jobs:
         id: version
         run: |
           BUILD_DATE=$(date +'%Y%m%d-%H%M')
-          VERSION="v${{ github.run_number }}-${BUILD_DATE}"
-          echo "OVERRIDE_VERSION_NAME=$VERSION" >> $GITHUB_ENV
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          VERSION_NAME="v${{ github.run_number }}-${BUILD_DATE}"
+          # Base 600,000,000 + run number to stay in valid range
+          VERSION_CODE=$((600000000 + ${{ github.run_number }}))
+          echo "OVERRIDE_VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "OVERRIDE_VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+          echo "VERSION=$VERSION_NAME" >> $GITHUB_OUTPUT
 
       - name: Build Production Vanilla Direct Release APK
         run: ./gradlew :app:assembleProductionVanillaDirectRelease -q
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
+          OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
 
       - name: Upload Build Reports on Failure
         if: failure()

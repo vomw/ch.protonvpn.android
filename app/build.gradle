@@ -155,6 +155,9 @@ android {
         compose true
         viewBinding true
     }
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
     defaultConfig {
         applicationId appId
         multiDexEnabled true
@@ -503,6 +506,11 @@ class Helpers {
     //  Version code: AMMmmDDRR as decimal integer
     //  A - hardcoded number 6. Because abi splits were used before
     int getVersionCode() {
+        def overrideCode = System.getenv("OVERRIDE_VERSION_CODE")
+        if (overrideCode != null) {
+            return overrideCode.toInteger()
+        }
+
         def name = fullVersionName
         def versions = name.split("\\.")
         def major = versions[0].toInteger()
