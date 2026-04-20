@@ -19,17 +19,9 @@
 package com.protonvpn.android.telemetry
 
 import android.content.Context
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import dagger.Reusable
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-
-private const val SNAPSHOT_DELAY_HRS = 24L
-private const val UNIQUE_SNAPSHOT_NAME = "SettingsSnapshotWorker"
 
 @Reusable
 class SettingsSnapshotScheduler @Inject constructor(
@@ -37,15 +29,6 @@ class SettingsSnapshotScheduler @Inject constructor(
 ) : SnapshotScheduler {
 
     override fun scheduleSettingsSnapshot() {
-        val workRequest =
-            PeriodicWorkRequestBuilder<SettingsHeartbeatWorker>(SNAPSHOT_DELAY_HRS, TimeUnit.HOURS)
-                .setConstraints(Constraints.Builder().build())
-                .build()
-
-        WorkManager.getInstance(appContext).enqueueUniquePeriodicWork(
-            UNIQUE_SNAPSHOT_NAME,
-            ExistingPeriodicWorkPolicy.UPDATE,
-            workRequest
-        )
+        // Tracker removed
     }
 }

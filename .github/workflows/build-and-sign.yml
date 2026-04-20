@@ -33,8 +33,18 @@ jobs:
       - name: Grant Execute Permission to Gradlew
         run: chmod +x gradlew
 
+      - name: Set Version Variable
+        id: version
+        run: |
+          BUILD_DATE=$(date +'%Y%m%d-%H%M')
+          VERSION="v${{ github.run_number }}-${BUILD_DATE}"
+          echo "OVERRIDE_VERSION_NAME=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Build Production Vanilla Direct Release APK
         run: ./gradlew :app:assembleProductionVanillaDirectRelease -q
+        env:
+          OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
 
       - name: Upload Build Reports on Failure
         if: failure()
@@ -71,7 +81,7 @@ jobs:
           # Construct the filename as requested: {packageId}-v{version}.apk
           # Sanitize version name to remove any unexpected whitespace
           CLEAN_VERSION=$(echo "$VERSION_NAME" | xargs)
-          NEW_NAME="${PACKAGE_ID}-v${CLEAN_VERSION}.apk"
+          NEW_NAME="${PACKAGE_ID}-${CLEAN_VERSION}.apk"
           
           # The signed APK is produced by the sign-android-release action
           # We use the output from the sign_app step for maximum reliability
@@ -93,6 +103,8 @@ jobs:
                 exit 1
             fi
           fi
+        env:
+          OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

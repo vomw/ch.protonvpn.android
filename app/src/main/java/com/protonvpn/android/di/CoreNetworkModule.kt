@@ -198,10 +198,10 @@ public class CoreBaseNetworkModule {
             .client(bootstrapClient)
             .url(DohConfig.dohUrl.toHttpUrl())
             .bootstrapDnsHosts(listOf(
-                InetAddress.getByName("104.21.80.235"),
-                InetAddress.getByName("172.67.187.165"),
-                InetAddress.getByName("188.114.96.3"),
-                InetAddress.getByName("104.16.185.241")
+                InetAddress.getByName("1.1.1.1"),
+                InetAddress.getByName("1.0.0.1"),
+                InetAddress.getByName("8.8.8.8"),
+                InetAddress.getByName("8.8.4.4")
             ))
             .build()
 
