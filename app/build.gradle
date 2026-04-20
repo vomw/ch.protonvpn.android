@@ -40,7 +40,6 @@ plugins {
     alias(libs.plugins.proton.vpn.android.application)
     alias(libs.plugins.android.compose.screenshot)
     alias(libs.plugins.androidx.baselineprofile)
-    alias(libs.plugins.androidx.room)
     alias(libs.plugins.dagger.hilt)
     alias(libs.plugins.detekt)
     alias(libs.plugins.jacoco)
@@ -154,9 +153,6 @@ android {
         buildConfig true
         compose true
         viewBinding true
-    }
-    room {
-        schemaDirectory("$projectDir/schemas")
     }
     defaultConfig {
         applicationId appId
@@ -389,16 +385,15 @@ android {
         freeCompilerArgs += ["-Xopt-in=kotlin.RequiresOptIn"]
     }
 
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
+
     lint {
         // In our process we might temporarily have extra translations that will get removed on
         // next update.
         disable 'ExtraTranslation', 'ImpliedQuantity', 'MissingDefaultResource', 'MissingTranslation'
         ignoreWarnings = true
-    }
-    room {
-        schemaDirectory "$projectDir/schemas"
-        // Using Java generation, kotlin generator generates incorrect code: https://issuetracker.google.com/issues/446633192
-        generateKotlin false
     }
 }
 
