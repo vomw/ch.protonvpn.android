@@ -367,6 +367,7 @@ android {
         jniLibs {
             useLegacyPackaging = true
             keepDebugSymbols.add("**/libandroidvpnrust.so")
+            pickFirsts.add("**/libgojni.so")
         }
     }
 
@@ -699,7 +700,6 @@ configurations {
 }
 
 configurations.configureEach {
-    exclude group: "me.proton.core", module: "notification-dagger"
     exclude group: "me.proton.core", module: "util-android-sentry"
     exclude group: "io.sentry"
 }
