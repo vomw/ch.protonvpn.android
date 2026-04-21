@@ -29,3 +29,4 @@
     - Reduced port scanning and ping timeouts to 2000ms.
     - Prioritized port 443 by placing it at the start of the sample list in `PrepareForConnection.kt`, which interacts with `parallelSearch` priority logic.
 - **KSP/Dagger**: Sensitive to missing imports during refactoring; always ensure `ServerListUpdater` and other core classes are imported in modified files.
+- **Dependency Conflicts**: Excluded `me.proton.crypto:android-golib` globally in `app/build.gradle` to resolve thousands of duplicate class conflicts with `me.proton.vpn:go-vpn-lib`. Both provide `com.proton.gopenpgp.*` and `go.*` classes; prioritized `go-vpn-lib` for VPN compatibility.
