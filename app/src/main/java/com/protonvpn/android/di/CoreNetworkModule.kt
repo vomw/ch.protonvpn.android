@@ -20,6 +20,9 @@ package com.protonvpn.android.di
 
 import android.content.Context
 import com.protonvpn.android.api.DohConfig
+import com.protonvpn.android.logging.LogCategory
+import com.protonvpn.android.logging.LogLevel
+import com.protonvpn.android.logging.ProtonLogger
 import com.protonvpn.android.vpn.VpnDns
 import dagger.Binds
 import dagger.Module
@@ -68,6 +71,7 @@ import me.proton.core.network.domain.session.SessionProvider
 import me.proton.core.network.presentation.util.ErrorMessageContextImpl
 import me.proton.core.util.kotlin.CoroutineScopeProvider
 import okhttp3.Cache
+import okhttp3.Dns
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
@@ -190,20 +194,25 @@ public class CoreBaseNetworkModule {
     @Singleton
     @SharedOkHttpClient
     internal fun provideOkHttpClient(vpnDns: VpnDns): OkHttpClient {
-        val bootstrapClient = OkHttpClient.Builder()
-            .dns(vpnDns) // Use default/VPN DNS to bootstrap the DoH provider
-            .build()
+        val dns = try {
+            val bootstrapClient = OkHttpClient.Builder()
+                .dns(vpnDns) // Use default/VPN DNS to bootstrap the DoH provider
+                .build()
 
-        val dns = DnsOverHttps.Builder()
-            .client(bootstrapClient)
-            .url(DohConfig.dohUrl.toHttpUrl())
-            .bootstrapDnsHosts(listOf(
-                InetAddress.getByName("1.1.1.1"),
-                InetAddress.getByName("1.0.0.1"),
-                InetAddress.getByName("8.8.8.8"),
-                InetAddress.getByName("8.8.4.4")
-            ))
-            .build()
+            DnsOverHttps.Builder()
+                .client(bootstrapClient)
+                .url(DohConfig.dohUrl.toHttpUrl())
+                .bootstrapDnsHosts(listOf(
+                    InetAddress.getByName("1.1.1.1"),
+                    InetAddress.getByName("1.0.0.1"),
+                    InetAddress.getByName("8.8.8.8"),
+                    InetAddress.getByName("8.8.4.4")
+                ))
+                .build()
+        } catch (e: Exception) {
+            ProtonLogger.logCustom(LogLevel.ERROR, LogCategory.APP, "Failed to initialize DoH: ${e.message}")
+            vpnDns
+        }
 
         return OkHttpClient().newBuilder()
             .dns(dns)
