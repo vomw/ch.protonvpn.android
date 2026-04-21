@@ -265,16 +265,16 @@ class ProtonApiRetroFitImpl @Inject constructor(
         manager { postPromoCode(PromoCodesBody("VPN", listOf(code))) }
 
     override suspend fun dismissNps(): ApiResult<GenericResponse> =
-        ApiResult.Success(GenericResponse()) // Tracker removed
+        ApiResult.Success(GenericResponse(1000)) // Tracker removed
 
     override suspend fun postNps(data: PostNps.NpsData): ApiResult<GenericResponse> =
-        ApiResult.Success(GenericResponse()) // Tracker removed
+        ApiResult.Success(GenericResponse(1000)) // Tracker removed
 
     override suspend fun postStats(events: List<StatsEvent>): ApiResult<GenericResponse> =
-        ApiResult.Success(GenericResponse()) // Tracker removed
+        ApiResult.Success(GenericResponse(1000)) // Tracker removed
 
     override suspend fun putTelemetryGlobalSetting(isEnabled: Boolean): ApiResult<GlobalSettingsResponse> =
-        ApiResult.Success(GlobalSettingsResponse()) // Tracker removed
+        ApiResult.Success(GlobalSettingsResponse(GlobalUserSettings(false))) // Tracker removed
 
     private fun createNetZoneHeaders(netzone: String?) =
         mutableMapOf<String, String>().apply {
