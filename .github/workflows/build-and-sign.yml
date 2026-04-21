@@ -50,6 +50,28 @@ jobs:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
 
+      - name: Debug - Print Dependency Tree
+        run: ./gradlew :app:dependencies --configuration productionVanillaDirectReleaseRuntimeClasspath -q > dependencies.txt
+
+      - name: Upload Dependency Tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-tree
+          path: dependencies.txt
+
+      - name: Run Unit Tests (Debug Measure)
+        run: ./gradlew :app:testProductionVanillaDirectReleaseUnitTest -q --continue
+        env:
+          OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
+          OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/build/test-results/**/*.xml'
+
       - name: Upload Build Reports on Failure
         if: failure()
         uses: actions/upload-artifact@v4
