@@ -26,7 +26,7 @@ import com.protonvpn.android.appconfig.SessionForkSelectorResponse
 import com.protonvpn.android.appconfig.UserCountryPhysical
 import com.protonvpn.android.appconfig.UserCountryTelephonyBased
 import com.protonvpn.android.appconfig.globalsettings.GlobalSettingsResponse
-import com.protonvpn.android.appconfig.globalsettings.UpdateGlobalTelemetry
+import com.protonvpn.android.appconfig.globalsettings.GlobalUserSettings
 import com.protonvpn.android.logging.LogCategory
 import com.protonvpn.android.logging.ProtonLogger
 import com.protonvpn.android.models.config.bugreport.DynamicReportModel

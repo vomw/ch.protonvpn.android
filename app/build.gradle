@@ -135,6 +135,11 @@ def supportedLocales = ['ar', 'b+es+419', 'be', 'ca', 'cs', 'da', 'de', 'el', 'e
 def helpers = new Helpers(rootDir, providers)
 def debugKeystorePath = System.getenv("DEBUG_KEYSTORE_FILE")
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.generateKotlin", "false")
+}
+
 android {
     namespace "com.protonvpn.android"
     testNamespace 'com.protonvpn'
@@ -383,11 +388,6 @@ android {
 
     kotlinOptions {
         freeCompilerArgs += ["-Xopt-in=kotlin.RequiresOptIn"]
-    }
-
-    ksp {
-        arg("room.schemaLocation", "$projectDir/schemas")
-        arg("room.generateKotlin", "false")
     }
 
     lint {
