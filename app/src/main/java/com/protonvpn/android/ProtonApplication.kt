@@ -88,7 +88,6 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import me.proton.core.accountmanager.data.AccountStateHandler
 import me.proton.core.eventmanager.data.CoreEventManagerStarter
 import me.proton.core.humanverification.presentation.HumanVerificationStateHandler
-import me.proton.core.network.presentation.installCertificateTransparencySupport
 import me.proton.core.plan.data.PurchaseStateHandler
 import me.proton.core.userrecovery.presentation.compose.DeviceRecoveryHandler
 import me.proton.core.userrecovery.presentation.compose.DeviceRecoveryNotificationSetup
@@ -162,8 +161,8 @@ open class ProtonApplication : Application() {
     protected var lastMainProcessExitReason: Int? = null
 
     override fun onCreate() {
-        super.onCreate()
         appContext = this
+        super.onCreate()
 
         initPreferences()
 

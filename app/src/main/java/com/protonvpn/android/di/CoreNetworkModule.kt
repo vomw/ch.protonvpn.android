@@ -19,6 +19,7 @@
 package com.protonvpn.android.di
 
 import android.content.Context
+import android.util.Log
 import com.protonvpn.android.api.DohConfig
 import com.protonvpn.android.logging.LogCategory
 import com.protonvpn.android.logging.LogLevel
@@ -196,25 +197,27 @@ public class CoreBaseNetworkModule {
     internal fun provideOkHttpClient(vpnDns: VpnDns): OkHttpClient {
         val dns = try {
             val bootstrapClient = OkHttpClient.Builder()
-                .dns(vpnDns) // Use default/VPN DNS to bootstrap the DoH provider
+                .dns(Dns.SYSTEM) // Use system DNS to bootstrap the DoH provider
                 .build()
+
+            // Safe lookup for bootstrap hosts
+            val bootstrapHosts = listOf(
+                "1.1.1.1", "1.0.0.1", "8.8.8.8", "8.8.4.4"
+            ).mapNotNull {
+                try { InetAddress.getByName(it) } catch (e: Exception) { null }
+            }
 
             DnsOverHttps.Builder()
                 .client(bootstrapClient)
                 .url(DohConfig.dohUrl.toHttpUrl())
-                .bootstrapDnsHosts(listOf(
-                    InetAddress.getByName("1.1.1.1"),
-                    InetAddress.getByName("1.0.0.1"),
-                    InetAddress.getByName("8.8.8.8"),
-                    InetAddress.getByName("8.8.4.4")
-                ))
+                .bootstrapDnsHosts(bootstrapHosts)
                 .build()
-        } catch (e: Exception) {
-            ProtonLogger.logCustom(LogLevel.ERROR, LogCategory.APP, "Failed to initialize DoH: ${e.message}")
+        } catch (e: Throwable) {
+            Log.e("ProtonVpn", "Failed to initialize DoH, falling back to VpnDns", e)
             vpnDns
         }
 
-        return OkHttpClient().newBuilder()
+        return OkHttpClient.Builder()
             .dns(dns)
             .build()
     }
