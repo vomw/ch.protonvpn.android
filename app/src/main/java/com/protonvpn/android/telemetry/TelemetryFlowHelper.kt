@@ -24,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,12 +42,14 @@ class TelemetryFlowHelper @Inject constructor(
 ) {
     fun <T> Flow<T>.report(
         sendImmediately: Boolean = false,
-        event: (T) -> TelemetryEventData
+        event: suspend (T) -> TelemetryEventData?
     ): Flow<T> = onEach {
-        telemetry(event(it), sendImmediately)
+        event(it)?.let { data -> telemetry(data, sendImmediately) }
     }.also { it.launchIn(scope) }
 
-    fun event(sendImmediately: Boolean = false, event: () -> TelemetryEventData) {
-        telemetry(event(), sendImmediately)
+    fun event(sendImmediately: Boolean = false, event: suspend () -> TelemetryEventData?) {
+        scope.launch {
+            event()?.let { data -> telemetry(data, sendImmediately) }
+        }
     }
 }

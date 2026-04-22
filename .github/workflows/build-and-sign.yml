@@ -55,13 +55,13 @@ jobs:
           path: dependencies.txt
 
       - name: Build Production Vanilla Direct Release APK
-        run: ./gradlew :app:assembleProductionVanillaDirectRelease -q
+        run: ./gradlew :app:assembleProductionVanillaDirectRelease -q --stacktrace --info
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
 
       - name: Run Unit Tests (Debug Measure)
-        run: ./gradlew :app:testProductionVanillaDirectReleaseUnitTest -q --continue
+        run: ./gradlew :app:testProductionVanillaDirectReleaseUnitTest -q --continue --stacktrace --info
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
