@@ -19,12 +19,34 @@
 
 package com.protonvpn.android.telemetry
 
+import dagger.Reusable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class DefaultTelemetryReporter @Inject constructor() : TelemetryReporter {
-    override fun report(event: TelemetryEventData) {
+    override fun invoke(telemetryEvent: TelemetryEventData, sendImmediately: Boolean) {
         // Tracker removed
+    }
+}
+
+@Reusable
+class TelemetryFlowHelper @Inject constructor(
+    private val scope: CoroutineScope,
+    private val telemetry: TelemetryReporter
+) {
+    fun <T> Flow<T>.report(
+        sendImmediately: Boolean = false,
+        event: (T) -> TelemetryEventData
+    ): Flow<T> = onEach {
+        telemetry(event(it), sendImmediately)
+    }.also { it.launchIn(scope) }
+
+    fun event(sendImmediately: Boolean = false, event: () -> TelemetryEventData) {
+        telemetry(event(), sendImmediately)
     }
 }
