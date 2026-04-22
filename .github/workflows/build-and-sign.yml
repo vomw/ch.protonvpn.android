@@ -50,7 +50,8 @@ jobs:
       - name: Build Production Vanilla Direct Release APK
         id: build_apk
         run: |
-          ./gradlew :app:assembleProductionVanillaDirectRelease -q --stacktrace --info > build-output.log 2> build-error.log
+          # Use --no-daemon to ensure clean environment and direct output capturing
+          ./gradlew :app:assembleProductionVanillaDirectRelease --no-daemon -q --stacktrace --info > build-output.log 2> build-error.log
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
@@ -59,11 +60,23 @@ jobs:
       - name: Run Unit Tests (Debug Measure)
         id: run_tests
         run: |
-          ./gradlew :app:testProductionVanillaDirectReleaseUnitTest -q --continue --stacktrace --info > test-output.log 2> test-error.log
+          ./gradlew :app:testProductionVanillaDirectReleaseUnitTest --no-daemon -q --continue --stacktrace --info > test-output.log 2> test-error.log
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
         continue-on-error: true
+
+      - name: Extract Key Errors
+        if: always()
+        run: |
+          # Extract Kotlin errors
+          grep "e: " build-output.log build-error.log test-output.log test-error.log > key-errors.txt || true
+          # Extract R8 errors
+          grep "R8:" build-output.log build-error.log >> key-errors.txt || true
+          # Extract Hilt errors
+          grep "Hilt" build-output.log build-error.log test-output.log test-error.log >> key-errors.txt || true
+          # Extract duplicate class errors
+          grep "Duplicate class" build-output.log build-error.log >> key-errors.txt || true
 
       - name: Upload Debug Artifacts
         if: always()
@@ -71,6 +84,7 @@ jobs:
         with:
           name: debug-artifacts
           path: |
+            key-errors.txt
             dependencies.txt
             dependencies-error.txt
             build-output.log
@@ -79,15 +93,16 @@ jobs:
             test-error.log
             **/build/reports/
             **/build/test-results/**/*.xml
+            app/src/main/java/io/sentry/
 
       - name: Fail if Build or Tests Failed
         run: |
           if [ "${{ steps.build_apk.outcome }}" != "success" ]; then
-            echo "Build failed. Check debug-artifacts for build-output.log and build-error.log"
+            echo "Build failed. Check debug-artifacts for build-output.log and key-errors.txt"
             exit 1
           fi
           if [ "${{ steps.run_tests.outcome }}" != "success" ]; then
-            echo "Tests failed. Check debug-artifacts for test-output.log and test-error.log"
+            echo "Tests failed. Check debug-artifacts for test-output.log and key-errors.txt"
             exit 1
           fi
 
