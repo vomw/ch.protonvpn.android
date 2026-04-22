@@ -27,5 +27,5 @@ class VpnConnectionTelemetry @Inject constructor() {
     fun start() {}
     fun onConnectionAbort(isFailure: Boolean = false, report: Boolean = true, sentryInfo: String? = null) {}
     fun onConnectionStart(trigger: Any? = null, hasExcludedLocations: Boolean = false) {}
-    fun onDisconnectionTrigger(trigger: Any? = null) {}
+    fun onDisconnectionTrigger(trigger: Any? = null, params: Any? = null) {}
 }

@@ -44,43 +44,55 @@ jobs:
           echo "OVERRIDE_VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
           echo "VERSION=$VERSION_NAME" >> $GITHUB_OUTPUT
 
-      - name: Debug - Print Dependency Tree
-        run: ./gradlew :app:dependencies --configuration productionVanillaDirectReleaseRuntimeClasspath -q > dependencies.txt
-
-      - name: Upload Dependency Tree
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-tree
-          path: dependencies.txt
+      - name: Debug - Generate Dependency Tree
+        run: ./gradlew :app:dependencies --configuration productionVanillaDirectReleaseRuntimeClasspath -q > dependencies.txt 2> dependencies-error.txt || true
 
       - name: Build Production Vanilla Direct Release APK
-        run: ./gradlew :app:assembleProductionVanillaDirectRelease -q --stacktrace --info
+        id: build_apk
+        run: |
+          ./gradlew :app:assembleProductionVanillaDirectRelease -q --stacktrace --info > build-output.log 2> build-error.log
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
+        continue-on-error: true
 
       - name: Run Unit Tests (Debug Measure)
-        run: ./gradlew :app:testProductionVanillaDirectReleaseUnitTest -q --continue --stacktrace --info
+        id: run_tests
+        run: |
+          ./gradlew :app:testProductionVanillaDirectReleaseUnitTest -q --continue --stacktrace --info > test-output.log 2> test-error.log
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
+        continue-on-error: true
 
-      - name: Upload Test Results
+      - name: Upload Debug Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: '**/build/test-results/**/*.xml'
+          name: debug-artifacts
+          path: |
+            dependencies.txt
+            dependencies-error.txt
+            build-output.log
+            build-error.log
+            test-output.log
+            test-error.log
+            **/build/reports/
+            **/build/test-results/**/*.xml
 
-      - name: Upload Build Reports on Failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-reports
-          path: '**/build/reports/'
+      - name: Fail if Build or Tests Failed
+        run: |
+          if [ "${{ steps.build_apk.outcome }}" != "success" ]; then
+            echo "Build failed. Check debug-artifacts for build-output.log and build-error.log"
+            exit 1
+          fi
+          if [ "${{ steps.run_tests.outcome }}" != "success" ]; then
+            echo "Tests failed. Check debug-artifacts for test-output.log and test-error.log"
+            exit 1
+          fi
 
       - name: Sign APK
+        if: steps.build_apk.outcome == 'success'
         id: sign_app
         uses: r0adkll/sign-android-release@v1
         with:
@@ -93,6 +105,7 @@ jobs:
           BUILD_TOOLS_VERSION: "36.0.0" # Pass as environment variable to the action
 
       - name: Prepare Artifact Names
+        if: steps.sign_app.outcome == 'success'
         id: names
         run: |
           # Extract versioning information using the Gradle task defined in the codebase
@@ -134,6 +147,7 @@ jobs:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
 
       - name: Upload Artifact
+        if: steps.names.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.names.outputs.NEW_NAME }}
