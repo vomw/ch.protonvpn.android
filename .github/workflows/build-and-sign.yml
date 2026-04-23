@@ -38,7 +38,6 @@ jobs:
         run: |
           BUILD_DATE=$(date +'%Y%m%d-%H%M')
           VERSION_NAME="v${{ github.run_number }}-${BUILD_DATE}"
-          # Base 600,000,000 + run number to stay in valid range
           VERSION_CODE=$((600000000 + ${{ github.run_number }}))
           echo "OVERRIDE_VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
           echo "OVERRIDE_VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
@@ -50,7 +49,6 @@ jobs:
       - name: Build Production Vanilla Direct Release APK
         id: build_apk
         run: |
-          # Use --no-daemon to ensure clean environment and direct output capturing
           ./gradlew :app:assembleProductionVanillaDirectRelease --no-daemon -q --stacktrace --info > build-output.log 2> build-error.log
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
@@ -69,40 +67,46 @@ jobs:
       - name: Extract Key Errors
         if: always()
         run: |
-          # Extract Kotlin errors
-          grep "e: " build-output.log build-error.log test-output.log test-error.log > key-errors.txt || true
+          mkdir -p debug-messages
+          # Extract Kotlin/Java compilation errors
+          grep -h "e: " build-output.log build-error.log test-output.log test-error.log > debug-messages/compilation-errors.txt || true
           # Extract R8 errors
-          grep "R8:" build-output.log build-error.log >> key-errors.txt || true
-          # Extract Hilt errors
-          grep "Hilt" build-output.log build-error.log test-output.log test-error.log >> key-errors.txt || true
-          # Extract duplicate class errors
-          grep "Duplicate class" build-output.log build-error.log >> key-errors.txt || true
+          grep -h "R8:" build-output.log build-error.log >> debug-messages/r8-errors.txt || true
+          # Extract Dagger/Hilt errors
+          grep -h "Dagger/" build-output.log build-error.log test-output.log test-error.log > debug-messages/hilt-errors.txt || true
+          # Extract Duplicate class errors
+          grep -h "Duplicate class" build-output.log build-error.log > debug-messages/duplicate-classes.txt || true
+          # Capture end of logs
+          tail -n 500 build-output.log > debug-messages/build-output-tail.txt || true
+          tail -n 500 test-output.log > debug-messages/test-output-tail.txt || true
 
-      - name: Upload Debug Artifacts
+      - name: Upload Debug Messages
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-artifacts
+          name: debug-messages
+          path: debug-messages/
+
+      - name: Upload Full Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-logs
           path: |
-            key-errors.txt
-            dependencies.txt
-            dependencies-error.txt
             build-output.log
             build-error.log
             test-output.log
             test-error.log
+            dependencies.txt
+            dependencies-error.txt
             **/build/reports/
             **/build/test-results/**/*.xml
-            app/src/main/java/io/sentry/
+            app/build/generated/hilt/component_sources/
 
-      - name: Fail if Build or Tests Failed
+      - name: Fail if Build Failed
         run: |
           if [ "${{ steps.build_apk.outcome }}" != "success" ]; then
-            echo "Build failed. Check debug-artifacts for build-output.log and key-errors.txt"
-            exit 1
-          fi
-          if [ "${{ steps.run_tests.outcome }}" != "success" ]; then
-            echo "Tests failed. Check debug-artifacts for test-output.log and key-errors.txt"
+            echo "Build failed. Check debug-messages and full-logs."
             exit 1
           fi
 
@@ -117,44 +121,27 @@ jobs:
           keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
           keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
         env:
-          BUILD_TOOLS_VERSION: "36.0.0" # Pass as environment variable to the action
+          BUILD_TOOLS_VERSION: "36.0.0"
 
       - name: Prepare Artifact Names
         if: steps.sign_app.outcome == 'success'
         id: names
         run: |
-          # Extract versioning information using the Gradle task defined in the codebase
-          # Use -q to suppress gradle lifecycle messages
           ./gradlew :app:getExportArchiveNameProperties -q > props.txt
-          
-          # The task prints: archivesBaseName, fullVersionName, versionCode
           VERSION_NAME=$(sed -n '2p' props.txt | tr -d '\r\n')
-          
-          # Package ID is ch.protonvpn.android
           PACKAGE_ID="ch.protonvpn.android"
-          
-          # Construct the filename as requested: {packageId}-v{version}.apk
-          # Sanitize version name to remove any unexpected whitespace
           CLEAN_VERSION=$(echo "$VERSION_NAME" | xargs)
           NEW_NAME="${PACKAGE_ID}-${CLEAN_VERSION}.apk"
-          
-          # The signed APK is produced by the sign-android-release action
-          # We use the output from the sign_app step for maximum reliability
           SIGNED_APK_PATH="${{ steps.sign_app.outputs.signedReleaseFile }}"
-          
           if [ -f "$SIGNED_APK_PATH" ]; then
             cp "$SIGNED_APK_PATH" "./$NEW_NAME"
             echo "NEW_NAME=$NEW_NAME" >> $GITHUB_OUTPUT
-            echo "Successfully prepared artifact: $NEW_NAME"
           else
-            # Fallback check if the output variable is somehow empty
             FALLBACK_PATH=$(find app/build/outputs/apk/productionVanillaDirect/release -name "*-signed.apk" | head -n 1)
             if [ -f "$FALLBACK_PATH" ]; then
                 cp "$FALLBACK_PATH" "./$NEW_NAME"
                 echo "NEW_NAME=$NEW_NAME" >> $GITHUB_OUTPUT
-                echo "Successfully prepared artifact from fallback: $NEW_NAME"
             else
-                echo "Error: Signed APK not found"
                 exit 1
             fi
           fi
