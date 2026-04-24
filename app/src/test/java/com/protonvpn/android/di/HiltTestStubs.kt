@@ -28,7 +28,8 @@ import javax.inject.Singleton
 @TestInstallIn(
     components = [SingletonComponent::class],
     replaces = [
-        me.proton.core.configuration.dagger.StaticEnvironmentConfigModule::class
+        me.proton.core.configuration.dagger.StaticEnvironmentConfigModule::class,
+        PrivacyStubsModule::class
     ]
 )
 object HiltTestStubsModule {

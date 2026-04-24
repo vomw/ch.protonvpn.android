@@ -9,14 +9,13 @@
  * (at your option) any later version.
  */
 
-package com.protonvpn.android.appconfig.usecase
+package me.proton.core.observability.domain
 
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LargeMetricsSampler @Inject constructor() {
-    suspend operator fun invoke(block: suspend () -> Unit) {
-        // Tracker removed
-    }
+class ObservabilityManager @Inject constructor() {
+    fun enqueue(event: Any) {}
+    fun enqueue(data: Any, instant: Any) {}
 }

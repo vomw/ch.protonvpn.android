@@ -11,15 +11,22 @@
 
 package com.protonvpn.android.di
 
+import android.content.Context
+import com.protonvpn.android.appconfig.usecase.LargeMetricsSampler
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import me.proton.core.observability.domain.ObservabilityManager
+import me.proton.core.util.android.sentry.CustomSentryTagsProcessor
 import me.proton.core.util.android.sentry.GetInstallationId
 import me.proton.core.util.android.sentry.IsAccountSentryLoggingEnabled
 import me.proton.core.util.android.sentry.SentryHubBuilder
 import me.proton.core.util.android.sentry.project.AccountSentryHubBuilder
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,15 +45,36 @@ abstract class PrivacyStubsModule {
     companion object {
         @Provides
         @Singleton
-        fun provideSentryHubBuilder(): SentryHubBuilder = SentryHubBuilder()
+        fun provideCustomSentryTagsProcessor(@ApplicationContext context: Context): CustomSentryTagsProcessor =
+            CustomSentryTagsProcessor(context, null, null, null, Optional.empty<Any>())
+
+        @Provides
+        @Singleton
+        fun provideSentryHubBuilder(processor: CustomSentryTagsProcessor): SentryHubBuilder =
+            SentryHubBuilder(processor)
 
         @Provides
         @Singleton
         fun provideAccountSentryHubBuilder(
+            @ApplicationContext context: Context,
             builder: SentryHubBuilder,
             getInstallationId: GetInstallationId,
             isAccountSentryLoggingEnabled: IsAccountSentryLoggingEnabled
-        ): AccountSentryHubBuilder = AccountSentryHubBuilder(builder, null, null, getInstallationId, isAccountSentryLoggingEnabled)
+        ): AccountSentryHubBuilder = AccountSentryHubBuilder(
+            builder,
+            "https://localhost".toHttpUrl(),
+            context,
+            getInstallationId,
+            isAccountSentryLoggingEnabled
+        )
+
+        @Provides
+        @Singleton
+        fun provideObservabilityManager(): ObservabilityManager = ObservabilityManager()
+
+        @Provides
+        @Singleton
+        fun provideLargeMetricsSampler(): LargeMetricsSampler = LargeMetricsSampler()
     }
 }
 
