@@ -1,0 +1,51 @@
+{
+  "general": {
+    "defaultApprovalMode": "auto_edit",
+    "enableAutoUpdate": false,
+    "vimMode": false,
+    "enableNotifications": true,
+    "plan": {
+      "directory": "",
+      "modelRouting": false
+    },
+    "debugKeystrokeLogging": true
+  },
+  "ui": {
+    "autoThemeSwitching": false,
+    "inlineThinkingMode": "full",
+    "showStatusInTitle": true,
+    "footer": {
+      "hideContextPercentage": false
+    },
+    "showMemoryUsage": true,
+    "showCitations": true,
+    "showModelInfoInChat": true,
+    "useAlternateBuffer": true,
+    "terminalBuffer": true,
+    "loadingPhrases": "tips",
+    "errorVerbosity": "full"
+  },
+  "billing": {
+    "overageStrategy": "always"
+  },
+  "model": {
+    "disableLoopDetection": true
+  },
+  "context": {
+    "fileFiltering": {
+      "respectGitIgnore": false,
+      "respectGeminiIgnore": false
+    }
+  },
+  "tools": {
+    "sandboxAllowedPaths": [],
+    "sandboxNetworkAccess": false
+  },
+  "security": {
+    "enablePermanentToolApproval": true
+  },
+  "experimental": {
+    "worktrees": true,
+    "directWebFetch": true
+  }
+}

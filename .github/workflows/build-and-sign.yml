@@ -127,21 +127,31 @@ jobs:
         if: steps.sign_app.outcome == 'success'
         id: names
         run: |
+          # Extract versioning information using the Gradle task defined in the codebase
           ./gradlew :app:getExportArchiveNameProperties -q > props.txt
+          
+          # The task prints: archivesBaseName, fullVersionName, versionCode
           VERSION_NAME=$(sed -n '2p' props.txt | tr -d '\r\n')
+          
           PACKAGE_ID="ch.protonvpn.android"
           CLEAN_VERSION=$(echo "$VERSION_NAME" | xargs)
           NEW_NAME="${PACKAGE_ID}-${CLEAN_VERSION}.apk"
+          
+          # Use the signed APK output directly
           SIGNED_APK_PATH="${{ steps.sign_app.outputs.signedReleaseFile }}"
+          
           if [ -f "$SIGNED_APK_PATH" ]; then
             cp "$SIGNED_APK_PATH" "./$NEW_NAME"
             echo "NEW_NAME=$NEW_NAME" >> $GITHUB_OUTPUT
+            echo "Successfully prepared artifact: $NEW_NAME"
           else
+            # Fallback
             FALLBACK_PATH=$(find app/build/outputs/apk/productionVanillaDirect/release -name "*-signed.apk" | head -n 1)
             if [ -f "$FALLBACK_PATH" ]; then
                 cp "$FALLBACK_PATH" "./$NEW_NAME"
                 echo "NEW_NAME=$NEW_NAME" >> $GITHUB_OUTPUT
             else
+                echo "Error: Signed APK not found"
                 exit 1
             fi
           fi

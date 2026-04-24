@@ -7,10 +7,11 @@ import me.proton.core.util.android.sentry.SentryHubBuilder;
 import me.proton.core.util.android.sentry.GetInstallationId;
 import me.proton.core.util.android.sentry.IsAccountSentryLoggingEnabled;
 import kotlin.jvm.functions.Function1;
+import io.sentry.SentryOptions;
 
 public class AccountSentryHubBuilder {
     public AccountSentryHubBuilder(SentryHubBuilder builder, HttpUrl url, Context context, GetInstallationId getInstallationId, IsAccountSentryLoggingEnabled isAccountSentryLoggingEnabled) {}
-    public SentryHub invoke(String dsn, String release, Function1 configuration) {
+    public SentryHub invoke(String dsn, String release, Function1<SentryOptions, kotlin.Unit> configuration) {
         return new SentryHub();
     }
 }
