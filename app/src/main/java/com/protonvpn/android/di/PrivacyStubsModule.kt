@@ -19,12 +19,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import me.proton.core.observability.domain.ObservabilityManager
 import me.proton.core.observability.domain.ObservabilityRepository
 import me.proton.core.observability.domain.ObservabilityWorkerManager
+import me.proton.core.observability.domain.usecase.IsObservabilityEnabled
 import me.proton.core.observability.domain.usecase.ProcessObservabilityEvents
-import me.proton.core.observability.domain.usecase.ProcessTelemetryEvents
 import me.proton.core.observability.domain.usecase.SendObservabilityEvents
+import me.proton.core.telemetry.domain.TelemetryWorkerManager
+import me.proton.core.telemetry.domain.repository.TelemetryRepository
+import me.proton.core.telemetry.domain.usecase.IsTelemetryEnabled
+import me.proton.core.telemetry.domain.usecase.ProcessTelemetryEvents
 import me.proton.core.util.android.sentry.CustomSentryTagsProcessor
 import me.proton.core.util.android.sentry.GetInstallationId
 import me.proton.core.util.android.sentry.IsAccountSentryLoggingEnabled
@@ -75,27 +78,52 @@ abstract class PrivacyStubsModule {
 
         @Provides
         @Singleton
-        fun provideObservabilityManager(): ObservabilityManager = ObservabilityManager()
-
-        @Provides
-        @Singleton
         fun provideLargeMetricsSampler(): LargeMetricsSampler = LargeMetricsSampler()
 
         @Provides
         @Singleton
-        fun provideObservabilityRepository(): ObservabilityRepository = object : ObservabilityRepository {}
+        fun provideObservabilityRepository(): ObservabilityRepository = object : ObservabilityRepository {
+            override suspend fun addEvent(event: me.proton.core.observability.domain.entity.ObservabilityEvent) {}
+            override suspend fun deleteEvents(events: List<me.proton.core.observability.domain.entity.ObservabilityEvent>) {}
+            override suspend fun getEventsAndSanitizeDb(maxEvents: Int?): List<me.proton.core.observability.domain.entity.ObservabilityEvent> = emptyList()
+        }
 
         @Provides
         @Singleton
-        fun provideObservabilityWorkerManager(): ObservabilityWorkerManager = object : ObservabilityWorkerManager {}
+        fun provideObservabilityWorkerManager(): ObservabilityWorkerManager = object : ObservabilityWorkerManager {
+            override fun enqueueOrKeep(delay: Long) {}
+            override fun cancel() {}
+        }
 
         @Provides
         @Singleton
-        fun provideProcessObservabilityEvents(): ProcessObservabilityEvents = ProcessObservabilityEvents()
+        fun provideTelemetryRepository(): TelemetryRepository = object : TelemetryRepository {
+            override suspend fun addEvent(event: me.proton.core.telemetry.domain.entity.TelemetryEvent) {}
+            override suspend fun deleteAll() {}
+        }
+
+        @Provides
+        @Singleton
+        fun provideTelemetryWorkerManager(): TelemetryWorkerManager = object : TelemetryWorkerManager {
+            override fun enqueueOrKeep(delay: Long) {}
+            override fun cancel() {}
+        }
+        
+        @Provides
+        @Singleton
+        fun provideIsObservabilityEnabled(): IsObservabilityEnabled = IsObservabilityEnabled()
+
+        @Provides
+        @Singleton
+        fun provideIsTelemetryEnabled(): IsTelemetryEnabled = IsTelemetryEnabled()
 
         @Provides
         @Singleton
         fun provideSendObservabilityEvents(): SendObservabilityEvents = SendObservabilityEvents()
+
+        @Provides
+        @Singleton
+        fun provideProcessObservabilityEvents(): ProcessObservabilityEvents = ProcessObservabilityEvents()
 
         @Provides
         @Singleton

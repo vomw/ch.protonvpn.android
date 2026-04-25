@@ -1,9 +1,5 @@
 package me.proton.core.observability.domain.usecase
 
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class IsObservabilityEnabled @Inject constructor() {
+class IsObservabilityEnabled {
     suspend operator fun invoke(): Boolean = false
 }

@@ -705,6 +705,9 @@ configurations.configureEach {
     exclude group: "me.proton.core", module: "observability"
     exclude group: "me.proton.core", module: "observability-dagger"
     exclude group: "me.proton.core", module: "observability-data"
+    exclude group: "me.proton.core", module: "telemetry"
+    exclude group: "me.proton.core", module: "telemetry-dagger"
+    exclude group: "me.proton.core", module: "telemetry-data"
 }
 
 dependencies {

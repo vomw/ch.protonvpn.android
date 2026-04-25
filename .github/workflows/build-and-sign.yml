@@ -46,85 +46,26 @@ jobs:
       - name: Debug - Verify Stubs
         run: |
           echo "Verifying local stubs existence..."
-          ls -R app/src/main/java/io/sentry/ || echo "Sentry stubs missing!"
-          ls -R app/src/main/java/me/proton/core/observability/ || echo "Observability stubs missing!"
+          find app/src/main/java/io/sentry/ -name "*.java" -o -name "*.kt"
+          find app/src/main/java/me/proton/core/observability/ -name "*.java" -o -name "*.kt"
+          find app/src/main/java/me/proton/core/telemetry/ -name "*.java" -o -name "*.kt"
 
       - name: Build Production Vanilla Direct Release APK
         id: build_apk
         run: |
-          ./gradlew :app:assembleProductionVanillaDirectRelease --no-daemon -q --stacktrace --info > build-output.log 2> build-error.log
+          ./gradlew :app:assembleProductionVanillaDirectRelease --no-daemon -q --stacktrace --info
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
-        continue-on-error: true
 
       - name: Run Unit Tests (Debug Measure)
         id: run_tests
+        if: always()
         run: |
-          ./gradlew :app:testProductionVanillaDirectReleaseUnitTest --no-daemon -q --continue --stacktrace --info > test-output.log 2> test-error.log
+          ./gradlew :app:testProductionVanillaDirectReleaseUnitTest --no-daemon -q --continue --stacktrace --info || true
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
-        continue-on-error: true
-
-      - name: Extract Key Errors & Summary
-        if: always()
-        run: |
-          mkdir -p debug-messages
-          # Extract Kotlin/Java compilation errors
-          grep -h "e: " build-output.log build-error.log test-output.log test-error.log > debug-messages/compilation-errors.txt || true
-          # Extract R8 errors
-          grep -h "R8:" build-output.log build-error.log >> debug-messages/r8-errors.txt || true
-          # Extract Dagger/Hilt errors
-          grep -h "Dagger/" build-output.log build-error.log test-output.log test-error.log > debug-messages/hilt-errors.txt || true
-          # Extract Duplicate class errors
-          grep -h "Duplicate class" build-output.log build-error.log > debug-messages/duplicate-classes.txt || true
-          # Capture end of logs
-          tail -n 500 build-output.log > debug-messages/build-output-tail.txt || true
-          tail -n 500 test-output.log > debug-messages/test-output-tail.txt || true
-          # Copy stubs for verification
-          cp -r app/src/main/java/io/sentry debug-messages/sentry-stubs || true
-          cp -r app/src/main/java/me/proton/core/observability debug-messages/observability-stubs || true
-          
-          # Print summary to GitHub Actions job summary
-          echo "### Build Error Summary" >> $GITHUB_STEP_SUMMARY
-          if [ -s debug-messages/compilation-errors.txt ]; then
-            echo "#### Compilation Errors (First 10):" >> $GITHUB_STEP_SUMMARY
-            head -n 10 debug-messages/compilation-errors.txt >> $GITHUB_STEP_SUMMARY
-          fi
-          if [ -s debug-messages/hilt-errors.txt ]; then
-            echo "#### Hilt/Dagger Errors (First 10):" >> $GITHUB_STEP_SUMMARY
-            head -n 10 debug-messages/hilt-errors.txt >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Upload Debug Messages
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-messages
-          path: debug-messages/
-
-      - name: Upload Full Logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: full-logs
-          path: |
-            build-output.log
-            build-error.log
-            test-output.log
-            test-error.log
-            dependencies.txt
-            dependencies-error.txt
-            **/build/reports/
-            **/build/test-results/**/*.xml
-
-      - name: Fail if Build Failed
-        run: |
-          if [ "${{ steps.build_apk.outcome }}" != "success" ]; then
-            echo "Build failed. Check debug-messages and full-logs."
-            exit 1
-          fi
 
       - name: Sign APK
         if: steps.build_apk.outcome == 'success'

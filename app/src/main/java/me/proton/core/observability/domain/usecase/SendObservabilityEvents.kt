@@ -1,9 +1,5 @@
 package me.proton.core.observability.domain.usecase
 
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class SendObservabilityEvents @Inject constructor() {
+class SendObservabilityEvents {
     suspend operator fun invoke() {}
 }
