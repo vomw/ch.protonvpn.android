@@ -20,6 +20,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import me.proton.core.observability.domain.ObservabilityManager
+import me.proton.core.observability.domain.ObservabilityRepository
+import me.proton.core.observability.domain.ObservabilityWorkerManager
+import me.proton.core.observability.domain.usecase.ProcessObservabilityEvents
+import me.proton.core.observability.domain.usecase.ProcessTelemetryEvents
+import me.proton.core.observability.domain.usecase.SendObservabilityEvents
 import me.proton.core.util.android.sentry.CustomSentryTagsProcessor
 import me.proton.core.util.android.sentry.GetInstallationId
 import me.proton.core.util.android.sentry.IsAccountSentryLoggingEnabled
@@ -75,6 +80,26 @@ abstract class PrivacyStubsModule {
         @Provides
         @Singleton
         fun provideLargeMetricsSampler(): LargeMetricsSampler = LargeMetricsSampler()
+
+        @Provides
+        @Singleton
+        fun provideObservabilityRepository(): ObservabilityRepository = object : ObservabilityRepository {}
+
+        @Provides
+        @Singleton
+        fun provideObservabilityWorkerManager(): ObservabilityWorkerManager = object : ObservabilityWorkerManager {}
+
+        @Provides
+        @Singleton
+        fun provideProcessObservabilityEvents(): ProcessObservabilityEvents = ProcessObservabilityEvents()
+
+        @Provides
+        @Singleton
+        fun provideSendObservabilityEvents(): SendObservabilityEvents = SendObservabilityEvents()
+
+        @Provides
+        @Singleton
+        fun provideProcessTelemetryEvents(): ProcessTelemetryEvents = ProcessTelemetryEvents()
     }
 }
 

@@ -43,8 +43,11 @@ jobs:
           echo "OVERRIDE_VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
           echo "VERSION=$VERSION_NAME" >> $GITHUB_OUTPUT
 
-      - name: Debug - Generate Dependency Tree
-        run: ./gradlew :app:dependencies --configuration productionVanillaDirectReleaseRuntimeClasspath -q > dependencies.txt 2> dependencies-error.txt || true
+      - name: Debug - Verify Stubs
+        run: |
+          echo "Verifying local stubs existence..."
+          ls -R app/src/main/java/io/sentry/ || echo "Sentry stubs missing!"
+          ls -R app/src/main/java/me/proton/core/observability/ || echo "Observability stubs missing!"
 
       - name: Build Production Vanilla Direct Release APK
         id: build_apk
@@ -64,7 +67,7 @@ jobs:
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
         continue-on-error: true
 
-      - name: Extract Key Errors
+      - name: Extract Key Errors & Summary
         if: always()
         run: |
           mkdir -p debug-messages
@@ -79,6 +82,20 @@ jobs:
           # Capture end of logs
           tail -n 500 build-output.log > debug-messages/build-output-tail.txt || true
           tail -n 500 test-output.log > debug-messages/test-output-tail.txt || true
+          # Copy stubs for verification
+          cp -r app/src/main/java/io/sentry debug-messages/sentry-stubs || true
+          cp -r app/src/main/java/me/proton/core/observability debug-messages/observability-stubs || true
+          
+          # Print summary to GitHub Actions job summary
+          echo "### Build Error Summary" >> $GITHUB_STEP_SUMMARY
+          if [ -s debug-messages/compilation-errors.txt ]; then
+            echo "#### Compilation Errors (First 10):" >> $GITHUB_STEP_SUMMARY
+            head -n 10 debug-messages/compilation-errors.txt >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -s debug-messages/hilt-errors.txt ]; then
+            echo "#### Hilt/Dagger Errors (First 10):" >> $GITHUB_STEP_SUMMARY
+            head -n 10 debug-messages/hilt-errors.txt >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Upload Debug Messages
         if: always()
@@ -101,7 +118,6 @@ jobs:
             dependencies-error.txt
             **/build/reports/
             **/build/test-results/**/*.xml
-            app/build/generated/hilt/component_sources/
 
       - name: Fail if Build Failed
         run: |
@@ -127,31 +143,21 @@ jobs:
         if: steps.sign_app.outcome == 'success'
         id: names
         run: |
-          # Extract versioning information using the Gradle task defined in the codebase
           ./gradlew :app:getExportArchiveNameProperties -q > props.txt
-          
-          # The task prints: archivesBaseName, fullVersionName, versionCode
           VERSION_NAME=$(sed -n '2p' props.txt | tr -d '\r\n')
-          
           PACKAGE_ID="ch.protonvpn.android"
           CLEAN_VERSION=$(echo "$VERSION_NAME" | xargs)
           NEW_NAME="${PACKAGE_ID}-${CLEAN_VERSION}.apk"
-          
-          # Use the signed APK output directly
           SIGNED_APK_PATH="${{ steps.sign_app.outputs.signedReleaseFile }}"
-          
           if [ -f "$SIGNED_APK_PATH" ]; then
             cp "$SIGNED_APK_PATH" "./$NEW_NAME"
             echo "NEW_NAME=$NEW_NAME" >> $GITHUB_OUTPUT
-            echo "Successfully prepared artifact: $NEW_NAME"
           else
-            # Fallback
             FALLBACK_PATH=$(find app/build/outputs/apk/productionVanillaDirect/release -name "*-signed.apk" | head -n 1)
             if [ -f "$FALLBACK_PATH" ]; then
                 cp "$FALLBACK_PATH" "./$NEW_NAME"
                 echo "NEW_NAME=$NEW_NAME" >> $GITHUB_OUTPUT
             else
-                echo "Error: Signed APK not found"
                 exit 1
             fi
           fi
