@@ -49,8 +49,6 @@ jobs:
           find app/src/main/java/io/sentry/ -name "*.java" -o -name "*.kt" || true
           find app/src/main/java/me/proton/core/observability/ -name "*.java" -o -name "*.kt" || true
           find app/src/main/java/me/proton/core/telemetry/ -name "*.java" -o -name "*.kt" || true
-          echo "Checking for CoreTelemetryModule..."
-          ls app/src/main/java/com/protonvpn/android/di/CoreTelemetryModule.kt || echo "CoreTelemetryModule successfully removed."
 
       - name: Debug - Print Dependency Tree
         run: ./gradlew :app:dependencies --configuration productionVanillaDirectReleaseRuntimeClasspath -q
@@ -58,11 +56,14 @@ jobs:
       - name: Build Production Vanilla Direct Release APK
         id: build_apk
         run: |
-          # Print output directly to workflow for easy debugging as requested
           ./gradlew :app:assembleProductionVanillaDirectRelease --no-daemon -q --stacktrace --info
-        env:
-          OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
-          OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
+        continue-on-error: true
+
+      - name: Debug - Print Generated Factories on Failure
+        if: steps.build_apk.outcome == 'failure'
+        run: |
+          echo "### Generated Hilt Factories ###"
+          find app/build/generated/ksp/productionVanillaDirectRelease/java -name "*_Factory.java" | xargs -I {} sh -c 'echo "File: {}"; cat {}; echo "---"' || true
 
       - name: Run Unit Tests (Debug Measure)
         id: run_tests
@@ -72,6 +73,13 @@ jobs:
         env:
           OVERRIDE_VERSION_NAME: ${{ steps.version.outputs.VERSION }}
           OVERRIDE_VERSION_CODE: ${{ env.OVERRIDE_VERSION_CODE }}
+
+      - name: Fail if Build Failed
+        run: |
+          if [ "${{ steps.build_apk.outcome }}" != "success" ]; then
+            echo "Build failed. Check workflow logs for errors."
+            exit 1
+          fi
 
       - name: Sign APK
         if: steps.build_apk.outcome == 'success'

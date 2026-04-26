@@ -133,25 +133,32 @@ abstract class PrivacyStubsModule {
         
         @Provides
         @Singleton
-        fun provideIsObservabilityEnabled(): IsObservabilityEnabled = object : IsObservabilityEnabled {
+        fun provideIsObservabilityEnabled(): IsObservabilityEnabled = object : IsObservabilityEnabled() {
             override suspend fun invoke(): Boolean = false
         }
 
         @Provides
         @Singleton
-        fun provideSendObservabilityEvents(): SendObservabilityEvents = object : SendObservabilityEvents {
+        fun provideSendObservabilityEvents(): SendObservabilityEvents = object : SendObservabilityEvents() {
             override suspend fun invoke() {}
         }
 
         @Provides
         @Singleton
-        fun provideProcessObservabilityEvents(): ProcessObservabilityEvents = object : ProcessObservabilityEvents {
+        fun provideProcessObservabilityEvents(
+            isObservabilityEnabled: IsObservabilityEnabled,
+            repository: ObservabilityRepository,
+            sendEvents: SendObservabilityEvents
+        ): ProcessObservabilityEvents = object : ProcessObservabilityEvents(isObservabilityEnabled, repository, sendEvents) {
             override suspend fun invoke() {}
         }
 
         @Provides
         @Singleton
-        fun provideProcessTelemetryEvents(): ProcessTelemetryEvents = object : ProcessTelemetryEvents {
+        fun provideProcessTelemetryEvents(
+            isTelemetryEnabled: IsTelemetryEnabled,
+            repository: TelemetryRepository
+        ): ProcessTelemetryEvents = object : ProcessTelemetryEvents(isTelemetryEnabled, repository) {
             override suspend fun invoke() {}
         }
     }
