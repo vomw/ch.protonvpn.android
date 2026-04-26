@@ -24,14 +24,12 @@ import me.proton.core.domain.entity.UserId
 import me.proton.core.observability.domain.ObservabilityRepository
 import me.proton.core.observability.domain.ObservabilityWorkerManager
 import me.proton.core.observability.domain.usecase.IsObservabilityEnabled
-import me.proton.core.observability.domain.usecase.ProcessObservabilityEvents
 import me.proton.core.observability.domain.usecase.SendObservabilityEvents
 import me.proton.core.telemetry.domain.TelemetryWorkerManager
 import me.proton.core.telemetry.domain.repository.TelemetryLocalDataSource
 import me.proton.core.telemetry.domain.repository.TelemetryRemoteDataSource
 import me.proton.core.telemetry.domain.repository.TelemetryRepository
 import me.proton.core.telemetry.domain.usecase.IsTelemetryEnabled
-import me.proton.core.telemetry.domain.usecase.ProcessTelemetryEvents
 import me.proton.core.util.android.sentry.CustomSentryTagsProcessor
 import me.proton.core.util.android.sentry.GetInstallationId
 import me.proton.core.util.android.sentry.IsAccountSentryLoggingEnabled
@@ -133,32 +131,13 @@ abstract class PrivacyStubsModule {
         
         @Provides
         @Singleton
-        fun provideIsObservabilityEnabled(): IsObservabilityEnabled = object : IsObservabilityEnabled() {
+        fun provideIsObservabilityEnabled(): IsObservabilityEnabled = object : IsObservabilityEnabled {
             override suspend fun invoke(): Boolean = false
         }
 
         @Provides
         @Singleton
-        fun provideSendObservabilityEvents(): SendObservabilityEvents = object : SendObservabilityEvents() {
-            override suspend fun invoke() {}
-        }
-
-        @Provides
-        @Singleton
-        fun provideProcessObservabilityEvents(
-            isObservabilityEnabled: IsObservabilityEnabled,
-            repository: ObservabilityRepository,
-            sendEvents: SendObservabilityEvents
-        ): ProcessObservabilityEvents = object : ProcessObservabilityEvents(isObservabilityEnabled, repository, sendEvents) {
-            override suspend fun invoke() {}
-        }
-
-        @Provides
-        @Singleton
-        fun provideProcessTelemetryEvents(
-            isTelemetryEnabled: IsTelemetryEnabled,
-            repository: TelemetryRepository
-        ): ProcessTelemetryEvents = object : ProcessTelemetryEvents(isTelemetryEnabled, repository) {
+        fun provideSendObservabilityEvents(): SendObservabilityEvents = object : SendObservabilityEvents {
             override suspend fun invoke() {}
         }
     }
