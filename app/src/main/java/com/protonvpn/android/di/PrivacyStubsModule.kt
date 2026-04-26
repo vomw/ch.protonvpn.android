@@ -20,12 +20,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import me.proton.core.domain.entity.UserId
 import me.proton.core.observability.domain.ObservabilityRepository
 import me.proton.core.observability.domain.ObservabilityWorkerManager
 import me.proton.core.observability.domain.usecase.IsObservabilityEnabled
 import me.proton.core.observability.domain.usecase.ProcessObservabilityEvents
 import me.proton.core.observability.domain.usecase.SendObservabilityEvents
 import me.proton.core.telemetry.domain.TelemetryWorkerManager
+import me.proton.core.telemetry.domain.repository.TelemetryLocalDataSource
+import me.proton.core.telemetry.domain.repository.TelemetryRemoteDataSource
 import me.proton.core.telemetry.domain.repository.TelemetryRepository
 import me.proton.core.telemetry.domain.usecase.IsTelemetryEnabled
 import me.proton.core.telemetry.domain.usecase.ProcessTelemetryEvents
@@ -108,9 +111,24 @@ abstract class PrivacyStubsModule {
 
         @Provides
         @Singleton
+        fun provideTelemetryLocalDataSource(): TelemetryLocalDataSource = object : TelemetryLocalDataSource {
+            override suspend fun addEvent(userId: UserId, event: me.proton.core.telemetry.domain.entity.TelemetryEvent) {}
+            override suspend fun deleteEvents(userId: UserId, events: List<me.proton.core.telemetry.domain.entity.TelemetryEvent>) {}
+            override suspend fun getEvents(userId: UserId, maxEvents: Int?): List<me.proton.core.telemetry.domain.entity.TelemetryEvent> = emptyList()
+        }
+
+        @Provides
+        @Singleton
+        fun provideTelemetryRemoteDataSource(): TelemetryRemoteDataSource = object : TelemetryRemoteDataSource {
+            override suspend fun uploadEvents(userId: UserId, events: List<me.proton.core.telemetry.domain.entity.TelemetryEvent>): Result<Unit> = Result.success(Unit)
+        }
+
+        @Provides
+        @Singleton
         fun provideTelemetryWorkerManager(): TelemetryWorkerManager = object : TelemetryWorkerManager {
             override fun enqueueOrKeep(delay: Long) {}
             override fun cancel() {}
+            fun enqueueAndReplace(userId: UserId, delay: Long) {}
         }
         
         @Provides

@@ -12,10 +12,8 @@
 package com.protonvpn.android.di
 
 import android.app.Activity
-import android.content.Context
 import dagger.Module
 import dagger.Provides
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
 import io.mockk.mockk
@@ -30,6 +28,8 @@ import me.proton.core.payment.domain.repository.GoogleBillingRepository
 import me.proton.core.payment.domain.usecase.FindGooglePurchaseForPaymentOrderId
 import me.proton.core.payment.domain.usecase.FindUnacknowledgedGooglePurchase
 import me.proton.core.telemetry.domain.TelemetryWorkerManager
+import me.proton.core.telemetry.domain.repository.TelemetryLocalDataSource
+import me.proton.core.telemetry.domain.repository.TelemetryRemoteDataSource
 import me.proton.core.telemetry.domain.repository.TelemetryRepository
 import me.proton.core.telemetry.domain.usecase.IsTelemetryEnabled
 import me.proton.core.telemetry.domain.usecase.ProcessTelemetryEvents
@@ -100,6 +100,14 @@ object HiltTestStubsModule {
     @Provides
     @Singleton
     fun provideTelemetryRepository(): TelemetryRepository = mockk(relaxed = true)
+
+    @Provides
+    @Singleton
+    fun provideTelemetryLocalDataSource(): TelemetryLocalDataSource = mockk(relaxed = true)
+
+    @Provides
+    @Singleton
+    fun provideTelemetryRemoteDataSource(): TelemetryRemoteDataSource = mockk(relaxed = true)
 
     @Provides
     @Singleton

@@ -52,6 +52,9 @@ jobs:
           echo "Checking for CoreTelemetryModule..."
           ls app/src/main/java/com/protonvpn/android/di/CoreTelemetryModule.kt || echo "CoreTelemetryModule successfully removed."
 
+      - name: Debug - Print Dependency Tree
+        run: ./gradlew :app:dependencies --configuration productionVanillaDirectReleaseRuntimeClasspath -q
+
       - name: Build Production Vanilla Direct Release APK
         id: build_apk
         run: |
