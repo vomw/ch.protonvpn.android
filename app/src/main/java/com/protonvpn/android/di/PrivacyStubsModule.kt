@@ -13,6 +13,7 @@ package com.protonvpn.android.di
 
 import android.content.Context
 import com.protonvpn.android.appconfig.usecase.LargeMetricsSampler
+import com.protonvpn.android.telemetry.IsVpnTelemetryEnabled
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -49,6 +50,9 @@ abstract class PrivacyStubsModule {
     @Binds
     @Singleton
     abstract fun bindIsAccountSentryLoggingEnabled(impl: IsAccountSentryLoggingEnabledImpl): IsAccountSentryLoggingEnabled
+
+    @Binds
+    abstract fun bindIsTelemetryEnabled(impl: IsVpnTelemetryEnabled): IsTelemetryEnabled
 
     companion object {
         @Provides
@@ -111,23 +115,27 @@ abstract class PrivacyStubsModule {
         
         @Provides
         @Singleton
-        fun provideIsObservabilityEnabled(): IsObservabilityEnabled = IsObservabilityEnabled()
+        fun provideIsObservabilityEnabled(): IsObservabilityEnabled = object : IsObservabilityEnabled {
+            override suspend fun invoke(): Boolean = false
+        }
 
         @Provides
         @Singleton
-        fun provideIsTelemetryEnabled(): IsTelemetryEnabled = IsTelemetryEnabled()
+        fun provideSendObservabilityEvents(): SendObservabilityEvents = object : SendObservabilityEvents {
+            override suspend fun invoke() {}
+        }
 
         @Provides
         @Singleton
-        fun provideSendObservabilityEvents(): SendObservabilityEvents = SendObservabilityEvents()
+        fun provideProcessObservabilityEvents(): ProcessObservabilityEvents = object : ProcessObservabilityEvents {
+            override suspend fun invoke() {}
+        }
 
         @Provides
         @Singleton
-        fun provideProcessObservabilityEvents(): ProcessObservabilityEvents = ProcessObservabilityEvents()
-
-        @Provides
-        @Singleton
-        fun provideProcessTelemetryEvents(): ProcessTelemetryEvents = ProcessTelemetryEvents()
+        fun provideProcessTelemetryEvents(): ProcessTelemetryEvents = object : ProcessTelemetryEvents {
+            override suspend fun invoke() {}
+        }
     }
 }
 
