@@ -161,7 +161,7 @@ object DatabaseMigrations {
 
     val MIGRATION_21_22 = object : Migration(21, 22) {
         override fun migrate(database: SupportSQLiteDatabase) {
-            TelemetryDatabase.MIGRATION_0.migrate(database)
+            me.proton.core.telemetry.data.db.TelemetryDatabase.MIGRATION_0.migrate(database)
             UserSettingsDatabase.MIGRATION_3.migrate(database)
         }
     }
