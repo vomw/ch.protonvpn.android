@@ -7,7 +7,7 @@ interface TelemetryDatabase {
     fun telemetryDao(): TelemetryDao
 
     companion object {
-        val MIGRATION_0 = object : Migration(0, 1) {
+        val MIGRATION_0 = object : Migration(21, 22) {
             override fun migrate(db: SupportSQLiteDatabase) {}
         }
     }
