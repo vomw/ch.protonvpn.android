@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-package com.protonvpn.android.di
+package me.proton.core.observability.domain
 
 import android.content.Context
 import com.protonvpn.android.appconfig.usecase.LargeMetricsSampler
@@ -23,18 +23,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
-import me.proton.core.observability.domain.ObservabilityManager
-import me.proton.core.observability.domain.ObservabilityRepository
-import me.proton.core.observability.domain.ObservabilityWorkerManager
 import me.proton.core.observability.domain.usecase.IsObservabilityEnabled
-import me.proton.core.observability.domain.usecase.ProcessObservabilityEvents
 import me.proton.core.observability.domain.usecase.SendObservabilityEvents
 import me.proton.core.telemetry.domain.TelemetryWorkerManager
 import me.proton.core.telemetry.domain.repository.TelemetryLocalDataSource
 import me.proton.core.telemetry.domain.repository.TelemetryRemoteDataSource
 import me.proton.core.telemetry.domain.repository.TelemetryRepository
 import me.proton.core.telemetry.domain.usecase.IsTelemetryEnabled
-import me.proton.core.telemetry.domain.usecase.ProcessTelemetryEvents
 import me.proton.core.util.android.sentry.CustomSentryTagsProcessor
 import me.proton.core.util.android.sentry.GetInstallationId
 import me.proton.core.util.android.sentry.IsAccountSentryLoggingEnabled
@@ -48,7 +43,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class PrivacyStubsModule {
+abstract class ObservabilityPrivacyModule {
 
     @Binds
     @Singleton
@@ -117,7 +112,7 @@ abstract class PrivacyStubsModule {
             isAccountSentryLoggingEnabled: IsAccountSentryLoggingEnabled
         ): AccountSentryHubBuilder = AccountSentryHubBuilder(
             builder,
-            "https://localhost".toHttpUrl(),
+            "https://localhost".to_http_url(),
             context,
             getInstallationId,
             isAccountSentryLoggingEnabled
@@ -126,30 +121,6 @@ abstract class PrivacyStubsModule {
         @Provides
         @Singleton
         fun provideLargeMetricsSampler(): LargeMetricsSampler = LargeMetricsSampler()
-
-        @Provides
-        @Singleton
-        fun provideObservabilityManager(
-            isObservabilityEnabled: IsObservabilityEnabled,
-            repository: ObservabilityRepository,
-            scopeProvider: CoroutineScopeProvider,
-            workerManager: ObservabilityWorkerManager
-        ): ObservabilityManager = ObservabilityManager(isObservabilityEnabled, repository, scopeProvider, workerManager)
-
-        @Provides
-        @Singleton
-        fun provideProcessObservabilityEvents(
-            isObservabilityEnabled: IsObservabilityEnabled,
-            repository: ObservabilityRepository,
-            sendEvents: SendObservabilityEvents
-        ): ProcessObservabilityEvents = ProcessObservabilityEvents(isObservabilityEnabled, repository, sendEvents)
-
-        @Provides
-        @Singleton
-        fun provideProcessTelemetryEvents(
-            isTelemetryEnabled: IsTelemetryEnabled,
-            repository: TelemetryRepository
-        ): ProcessTelemetryEvents = ProcessTelemetryEvents(isTelemetryEnabled, repository)
     }
 }
 
@@ -165,5 +136,6 @@ class IsAccountSentryLoggingEnabledImpl @Inject constructor() : IsAccountSentryL
 
 @Singleton
 class CoroutineScopeProviderImpl @Inject constructor() : CoroutineScopeProvider {
-    override fun get(dispatcher: Any?): CoroutineScope = MainScope()
+    override val GlobalDefaultSupervisedScope: CoroutineScope = MainScope()
+    override val GlobalIOSupervisedScope: CoroutineScope = MainScope()
 }
