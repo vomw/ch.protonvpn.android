@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 @Singleton
 class TelemetryLocalDataSourceStub @Inject constructor() : TelemetryLocalDataSource {
-    override suspend fun addEvent(userId: UserId?, event: TelemetryEvent) {}
-    override suspend fun deleteAllEvents(userId: UserId?) {}
-    override suspend fun deleteEvents(userId: UserId?, events: List<TelemetryEvent>) {}
+    override suspend fun addEvent(userId: UserId, event: TelemetryEvent) {}
+    override suspend fun deleteAllEvents(userId: UserId) {}
+    override suspend fun deleteEvents(userId: UserId, events: List<TelemetryEvent>) {}
 }
