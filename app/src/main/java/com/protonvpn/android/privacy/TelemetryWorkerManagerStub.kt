@@ -8,9 +8,7 @@ import kotlin.time.Duration
 
 @Singleton
 class TelemetryWorkerManagerStub @Inject constructor() : TelemetryWorkerManager {
-    override fun enqueueOrKeep(delay: Long) {}
     override fun cancel() {}
-    override fun enqueueAndReplace(userId: UserId, delay: Long) {}
     override fun enqueueAndReplace(userId: UserId?, delay: Duration) {}
     override fun enqueueOrKeep(userId: UserId?, delay: Duration) {}
     override fun cancel(userId: UserId?) {}

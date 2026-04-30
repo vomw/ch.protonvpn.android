@@ -8,7 +8,4 @@ import javax.inject.Singleton
 
 @Singleton
 class TelemetryRemoteDataSourceStub @Inject constructor() : TelemetryRemoteDataSource {
-    override suspend fun uploadEvents(userId: UserId, events: List<TelemetryEvent>): Result<Unit> = Result.success(Unit)
-    override suspend fun sendEvents(userId: UserId?, events: List<TelemetryEvent>) {}
-    override suspend fun sendEvents(userId: UserId, events: List<TelemetryEvent>) {}
 }

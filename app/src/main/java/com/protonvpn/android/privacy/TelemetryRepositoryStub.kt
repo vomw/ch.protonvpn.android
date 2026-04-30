@@ -8,8 +8,6 @@ import javax.inject.Singleton
 
 @Singleton
 class TelemetryRepositoryStub @Inject constructor() : TelemetryRepository {
-    override suspend fun addEvent(event: TelemetryEvent) {}
-    override suspend fun deleteAll() {}
     override suspend fun addEvent(userId: UserId?, event: TelemetryEvent) {}
     override suspend fun deleteAllEvents(userId: UserId?) {}
     override suspend fun deleteEvents(userId: UserId?, events: List<TelemetryEvent>) {}

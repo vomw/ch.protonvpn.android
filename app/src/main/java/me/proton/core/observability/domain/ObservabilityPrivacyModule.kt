@@ -112,7 +112,7 @@ abstract class ObservabilityPrivacyModule {
             isAccountSentryLoggingEnabled: IsAccountSentryLoggingEnabled
         ): AccountSentryHubBuilder = AccountSentryHubBuilder(
             builder,
-            "https://localhost".to_http_url(),
+            "https://localhost".toHttpUrl(),
             context,
             getInstallationId,
             isAccountSentryLoggingEnabled
