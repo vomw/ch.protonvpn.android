@@ -8,5 +8,6 @@ import kotlin.time.Duration
 @Singleton
 class ObservabilityWorkerManagerStub @Inject constructor() : ObservabilityWorkerManager {
     override fun cancel() {}
+    override fun enqueueOrKeep(delay: Long) {}
     override fun enqueueOrKeep(delay: Duration) {}
 }

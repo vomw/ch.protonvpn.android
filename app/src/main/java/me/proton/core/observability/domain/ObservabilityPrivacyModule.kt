@@ -21,8 +21,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
 import me.proton.core.observability.domain.usecase.IsObservabilityEnabled
 import me.proton.core.observability.domain.usecase.SendObservabilityEvents
 import me.proton.core.telemetry.domain.TelemetryWorkerManager
@@ -35,7 +33,6 @@ import me.proton.core.util.android.sentry.GetInstallationId
 import me.proton.core.util.android.sentry.IsAccountSentryLoggingEnabled
 import me.proton.core.util.android.sentry.SentryHubBuilder
 import me.proton.core.util.android.sentry.project.AccountSentryHubBuilder
-import me.proton.core.util.kotlin.CoroutineScopeProvider
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.util.Optional
 import javax.inject.Inject
@@ -55,10 +52,6 @@ abstract class ObservabilityPrivacyModule {
 
     @Binds
     abstract fun bindIsTelemetryEnabled(impl: IsVpnTelemetryEnabled): IsTelemetryEnabled
-
-    @Binds
-    @Singleton
-    abstract fun bindCoroutineScopeProvider(impl: CoroutineScopeProviderImpl): CoroutineScopeProvider
 
     @Binds
     @Singleton
@@ -132,10 +125,4 @@ class GetInstallationIdImpl @Inject constructor() : GetInstallationId {
 @Singleton
 class IsAccountSentryLoggingEnabledImpl @Inject constructor() : IsAccountSentryLoggingEnabled {
     override fun invoke(): Boolean = false
-}
-
-@Singleton
-class CoroutineScopeProviderImpl @Inject constructor() : CoroutineScopeProvider {
-    override val GlobalDefaultSupervisedScope: CoroutineScope = MainScope()
-    override val GlobalIOSupervisedScope: CoroutineScope = MainScope()
 }
