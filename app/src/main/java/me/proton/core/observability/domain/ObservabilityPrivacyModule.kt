@@ -23,10 +23,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import me.proton.core.observability.domain.usecase.IsObservabilityEnabled
 import me.proton.core.observability.domain.usecase.SendObservabilityEvents
-import me.proton.core.telemetry.domain.TelemetryWorkerManager
-import me.proton.core.telemetry.domain.repository.TelemetryLocalDataSource
-import me.proton.core.telemetry.domain.repository.TelemetryRemoteDataSource
-import me.proton.core.telemetry.domain.repository.TelemetryRepository
 import me.proton.core.telemetry.domain.usecase.IsTelemetryEnabled
 import me.proton.core.util.android.sentry.CustomSentryTagsProcessor
 import me.proton.core.util.android.sentry.GetInstallationId
@@ -52,22 +48,6 @@ abstract class ObservabilityPrivacyModule {
 
     @Binds
     abstract fun bindIsTelemetryEnabled(impl: IsVpnTelemetryEnabled): IsTelemetryEnabled
-
-    @Binds
-    @Singleton
-    abstract fun bindObservabilityRepository(impl: ObservabilityRepositoryStub): ObservabilityRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindTelemetryRepository(impl: TelemetryRepositoryStub): TelemetryRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindTelemetryLocalDataSource(impl: TelemetryLocalDataSourceStub): TelemetryLocalDataSource
-
-    @Binds
-    @Singleton
-    abstract fun bindTelemetryRemoteDataSource(impl: TelemetryRemoteDataSourceStub): TelemetryRemoteDataSource
 
     @Binds
     @Singleton
