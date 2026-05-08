@@ -24,5 +24,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AppStartExitLogger @Inject constructor() {
-    fun log() {}
+    fun log() {
+        android.util.Log.d("ProtonVpn", "AppStartExitLogger.log called")
+    }
 }

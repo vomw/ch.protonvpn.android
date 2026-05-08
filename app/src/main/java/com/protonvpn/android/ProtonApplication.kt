@@ -93,6 +93,9 @@ import me.proton.core.userrecovery.presentation.compose.DeviceRecoveryHandler
 import me.proton.core.userrecovery.presentation.compose.DeviceRecoveryNotificationSetup
 import me.proton.core.util.kotlin.CoreLogger
 import me.proton.vpn.sdk.api.ProtonVpnSdk
+import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.concurrent.Executors
 
 /**
@@ -161,11 +164,11 @@ open class ProtonApplication : Application() {
     protected var lastMainProcessExitReason: Int? = null
 
     override fun onCreate() {
+        initCrashLogger()
+        android.util.Log.d("ProtonVpn", "ProtonApplication.onCreate start")
         appContext = this
-        super.onCreate()
 
         initPreferences()
-
         if (isMainProcess()) {
             VpnLeakCanary.init(this)
             initLogger()
@@ -190,15 +193,21 @@ open class ProtonApplication : Application() {
 
             CoreLogger.set(VpnCoreLogger())
         }
+
+        super.onCreate()
     }
 
     fun initDependencies() {
+        android.util.Log.d("ProtonVpn", "initDependencies start")
         val dependencies = EntryPointAccessors.fromApplication(this, DependencyEntryPoints::class.java)
+        android.util.Log.d("ProtonVpn", "EntryPoints accessed")
 
         dependencies.updateAndroidAppTheme.start() // Set UI theme early.
+        android.util.Log.d("ProtonVpn", "updateAndroidAppTheme started")
 
         // Start the EventLoop for all logged in Users.
         dependencies.coreEventManagerStarter.start()
+        android.util.Log.d("ProtonVpn", "coreEventManagerStarter started")
 
         // Logging
         dependencies.appStartExitLogger.log()
@@ -206,6 +215,7 @@ open class ProtonApplication : Application() {
         dependencies.logcatLogCapture
         dependencies.powerStateLogger
         dependencies.settingChangesLogger
+        android.util.Log.d("ProtonVpn", "Logging components initialized")
 
         dependencies.accountStateHandler.start()
         dependencies.appExitObservability.start()
@@ -246,9 +256,11 @@ open class ProtonApplication : Application() {
         dependencies.widgetTracker.start()
         // SDK need to be initialized in during Application.onCreate
         dependencies.protonVpnSdk
+        android.util.Log.d("ProtonVpn", "Dependencies core initialized")
 
         // Start last.
         dependencies.periodicUpdateManager.start()
+        android.util.Log.d("ProtonVpn", "periodicUpdateManager started")
 
         if (!dependencies.isTv()) {
             dependencies.oneTimePopupNotificationTrigger
@@ -258,6 +270,7 @@ open class ProtonApplication : Application() {
         if (lastMainProcessExitReason in listOf(ApplicationExitInfo.REASON_CRASH, ApplicationExitInfo.REASON_CRASH_NATIVE)) {
             dependencies.goLangCrashReporter.get().start()
         }
+        android.util.Log.d("ProtonVpn", "initDependencies end")
     }
 
     private fun initPreferences() {
@@ -288,11 +301,37 @@ open class ProtonApplication : Application() {
         )
     }
 
+    private fun initCrashLogger() {
+        val cacheDir = cacheDir
+        val crashFile = File(cacheDir, "startup_crash.log")
+        try {
+            crashFile.writeText("Crash logger initialized at ${System.currentTimeMillis()}\n")
+        } catch (e: Exception) {
+            android.util.Log.e("ProtonVpn", "Failed to write to crash file", e)
+        }
+
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            try {
+                val sw = StringWriter()
+                val pw = PrintWriter(sw)
+                throwable.printStackTrace(pw)
+                val stackTrace = sw.toString()
+                crashFile.appendText("Uncaught exception in thread ${thread.name}:\n$stackTrace\n")
+                android.util.Log.e("ProtonVpn", "Uncaught exception", throwable)
+            } catch (e: Exception) {
+                // Ignore
+            } finally {
+                defaultHandler?.uncaughtException(thread, throwable)
+            }
+        }
+    }
+
     companion object {
         private var appContext: Context? = null
 
         fun getAppContext(): Context {
-            return appContext!!
+            return appContext ?: throw IllegalStateException("ProtonApplication context is null! It must be initialized before any Hilt components access it.")
         }
 
         fun setAppContextForTest(context: Context) {

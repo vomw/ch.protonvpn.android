@@ -368,7 +368,7 @@ object AppModule {
     }
 
     @Provides
-    fun providePackageManager(): PackageManager = ProtonApplication.getAppContext().packageManager
+    fun providePackageManager(@ApplicationContext context: Context): PackageManager = context.packageManager
 
     @Provides
     fun providePowerManager(@ApplicationContext appContext: Context): PowerManager =
