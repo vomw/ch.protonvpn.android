@@ -57,7 +57,11 @@ public class PrivacyProviders {
         return (ObservabilityWorkerManager) java.lang.reflect.Proxy.newProxyInstance(
                 ObservabilityWorkerManager.class.getClassLoader(),
                 new Class[]{ObservabilityWorkerManager.class},
-                (proxy, method, args) -> null
+                (proxy, method, args) -> {
+                    if (method.getReturnType().equals(void.class)) return null;
+                    if (method.getReturnType().getName().equals("kotlin.Unit")) return kotlin.Unit.INSTANCE;
+                    return null;
+                }
         );
     }
 
@@ -67,7 +71,11 @@ public class PrivacyProviders {
         return (TelemetryWorkerManager) java.lang.reflect.Proxy.newProxyInstance(
                 TelemetryWorkerManager.class.getClassLoader(),
                 new Class[]{TelemetryWorkerManager.class},
-                (proxy, method, args) -> null
+                (proxy, method, args) -> {
+                    if (method.getReturnType().equals(void.class)) return null;
+                    if (method.getReturnType().getName().equals("kotlin.Unit")) return kotlin.Unit.INSTANCE;
+                    return null;
+                }
         );
     }
 }
