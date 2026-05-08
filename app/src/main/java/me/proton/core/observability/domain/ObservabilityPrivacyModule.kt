@@ -59,10 +59,6 @@ abstract class ObservabilityPrivacyModule {
 
     @Binds
     @Singleton
-    abstract fun bindObservabilityWorkerManager(impl: ObservabilityWorkerManagerStub): ObservabilityWorkerManager
-
-    @Binds
-    @Singleton
     abstract fun bindTelemetryRepository(impl: TelemetryRepositoryStub): TelemetryRepository
 
     @Binds
@@ -72,10 +68,6 @@ abstract class ObservabilityPrivacyModule {
     @Binds
     @Singleton
     abstract fun bindTelemetryRemoteDataSource(impl: TelemetryRemoteDataSourceStub): TelemetryRemoteDataSource
-
-    @Binds
-    @Singleton
-    abstract fun bindTelemetryWorkerManager(impl: TelemetryWorkerManagerStub): TelemetryWorkerManager
 
     @Binds
     @Singleton

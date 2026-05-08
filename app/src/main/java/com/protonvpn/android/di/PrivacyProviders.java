@@ -6,6 +6,7 @@ import me.proton.core.observability.domain.ObservabilityWorkerManager;
 import me.proton.core.observability.domain.usecase.IsObservabilityEnabled;
 import me.proton.core.observability.domain.usecase.ProcessObservabilityEvents;
 import me.proton.core.observability.domain.usecase.SendObservabilityEvents;
+import me.proton.core.telemetry.domain.TelemetryWorkerManager;
 import me.proton.core.telemetry.domain.repository.TelemetryRepository;
 import me.proton.core.telemetry.domain.usecase.IsTelemetryEnabled;
 import me.proton.core.telemetry.domain.usecase.ProcessTelemetryEvents;
@@ -48,5 +49,25 @@ public class PrivacyProviders {
             TelemetryRepository repository
     ) {
         return new ProcessTelemetryEvents(isTelemetryEnabled, repository);
+    }
+
+    @Provides
+    @Singleton
+    public static ObservabilityWorkerManager provideObservabilityWorkerManager() {
+        return (ObservabilityWorkerManager) java.lang.reflect.Proxy.newProxyInstance(
+                ObservabilityWorkerManager.class.getClassLoader(),
+                new Class[]{ObservabilityWorkerManager.class},
+                (proxy, method, args) -> null
+        );
+    }
+
+    @Provides
+    @Singleton
+    public static TelemetryWorkerManager provideTelemetryWorkerManager() {
+        return (TelemetryWorkerManager) java.lang.reflect.Proxy.newProxyInstance(
+                TelemetryWorkerManager.class.getClassLoader(),
+                new Class[]{TelemetryWorkerManager.class},
+                (proxy, method, args) -> null
+        );
     }
 }
