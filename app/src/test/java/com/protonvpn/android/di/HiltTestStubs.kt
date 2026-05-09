@@ -45,7 +45,7 @@ import javax.inject.Singleton
     components = [SingletonComponent::class],
     replaces = [
         me.proton.core.configuration.dagger.StaticEnvironmentConfigModule::class,
-        PrivacyStubsModule::class
+        me.proton.core.observability.domain.ObservabilityPrivacyModule::class
     ]
 )
 object HiltTestStubsModule {
