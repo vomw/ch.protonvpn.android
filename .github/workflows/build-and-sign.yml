@@ -36,8 +36,7 @@ jobs:
       - name: Set Version Variable
         id: version
         run: |
-          BUILD_DATE=$(date +'%Y%m%d-%H%M')
-          VERSION_NAME="v${{ github.run_number }}-${BUILD_DATE}"
+          VERSION_NAME="5.17.${{ github.run_number }}.0"
           VERSION_CODE=$((600000000 + ${{ github.run_number }}))
           echo "OVERRIDE_VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
           echo "OVERRIDE_VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
