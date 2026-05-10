@@ -15,46 +15,24 @@ import kotlin.time.Duration
 
 @Singleton
 class ObservabilityRepositoryStub @Inject constructor() : ObservabilityRepository {
-    override suspend fun addEvent(event: ObservabilityEvent) {}
-    override suspend fun deleteEvents(events: List<ObservabilityEvent>) {}
-    override suspend fun getEventsAndSanitizeDb(maxEvents: Int?): List<ObservabilityEvent> = emptyList()
-    override suspend fun deleteAllEvents() {}
-    override suspend fun deleteEvent(event: ObservabilityEvent) {}
-    override suspend fun getEventCount(): Long = 0
 }
 
 @Singleton
 class ObservabilityWorkerManagerStub @Inject constructor() : ObservabilityWorkerManager {
-    override fun cancel() {}
-    override fun enqueueOrKeep(delay: Duration) {}
 }
 
 @Singleton
 class TelemetryRepositoryStub @Inject constructor() : TelemetryRepository {
-    override suspend fun addEvent(userId: UserId?, event: TelemetryEvent) {}
-    override suspend fun deleteAllEvents(userId: UserId?) { }
-    override suspend fun deleteEvents(userId: UserId?, events: List<TelemetryEvent>) {}
-    override suspend fun getEvents(userId: UserId?, limit: Int): List<TelemetryEvent> = emptyList()
-    override suspend fun sendEvents(userId: UserId?, events: List<TelemetryEvent>) {}
 }
 
 @Singleton
 class TelemetryLocalDataSourceStub @Inject constructor() : TelemetryLocalDataSource {
-    override suspend fun addEvent(userId: UserId?, event: TelemetryEvent) {}
-    override suspend fun deleteAllEvents(userId: UserId?) {}
-    override suspend fun deleteEvents(userId: UserId?, events: List<TelemetryEvent>) {}
-    override suspend fun getEvents(userId: UserId?, limit: Int): List<TelemetryEvent> = emptyList()
 }
 
 @Singleton
 class TelemetryRemoteDataSourceStub @Inject constructor() : TelemetryRemoteDataSource {
-    override suspend fun uploadEvents(userId: UserId, events: List<TelemetryEvent>): Result<Unit> = Result.success(Unit)
-    override suspend fun sendEvents(userId: UserId?, events: List<TelemetryEvent>) {}
 }
 
 @Singleton
 class TelemetryWorkerManagerStub @Inject constructor() : TelemetryWorkerManager {
-    override fun cancel(userId: UserId?) {}
-    override fun enqueueAndReplace(userId: UserId?, delay: Duration) {}
-    override fun enqueueOrKeep(userId: UserId?, delay: Duration) {}
 }

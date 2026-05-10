@@ -6,5 +6,4 @@ import javax.inject.Singleton
 
 @Singleton
 class IsObservabilityEnabledStub @Inject constructor() : IsObservabilityEnabled {
-    override suspend fun invoke(): Boolean = false
 }

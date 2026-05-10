@@ -7,5 +7,4 @@ import javax.inject.Singleton
 
 @Singleton
 class SendObservabilityEventsStub @Inject constructor() : SendObservabilityEvents {
-    override suspend fun invoke(events: List<ObservabilityEvent>) {}
 }
